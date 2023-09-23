@@ -106,6 +106,13 @@ public class TOMLParserTest {
         assertEquals(str1, str2);
         assertEquals(str1, str3);
 
+        String winpath = toml.getString("winpath").orElse(null);
+
+        assertEquals("C:\\Users\\nodejs\\templates", winpath);
+
+        String regex2 = toml.getString("regex2").orElse(null);
+        assertEquals("I [dw]on't need \\d{2} apples", regex2);
+
     }
 
 }

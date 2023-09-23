@@ -210,10 +210,20 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             return basicString.substring(1, basicString.length() - 1);
         } else if (ctx.ML_BASIC_STRING() != null) {
             String mlBasicString = ctx.ML_BASIC_STRING().getText();
-            mlBasicString = mlBasicString.substring(3, mlBasicString.length()-3);
+            mlBasicString = mlBasicString.substring(3, mlBasicString.length() - 3);
             mlBasicString = LINE_ENDING_BACKSLASH.matcher(mlBasicString).replaceAll("");
             mlBasicString = mlBasicString.replaceAll("^\r?\n", "");
             return mlBasicString;
+        } else if (ctx.LITERAL_STRING() != null) {
+            String LITERAL_STRING = ctx.LITERAL_STRING().getText();
+            // Remove single quotes
+            LITERAL_STRING = LITERAL_STRING.substring(1, LITERAL_STRING.length() - 1);
+            return LITERAL_STRING;
+        } else if (ctx.ML_LITERAL_STRING() != null) {
+            String ML_LITERAL_STRING = ctx.ML_LITERAL_STRING().getText();
+            // Remove ''' at start & end
+            ML_LITERAL_STRING = ML_LITERAL_STRING.substring(3, ML_LITERAL_STRING.length() - 3);
+            return ML_LITERAL_STRING;
         }
         throw new UnsupportedOperationException("Not supported yet.");
     }

@@ -15,6 +15,7 @@
  */
 package net.vieiro.toml;
 
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ import org.junit.jupiter.api.Test;
  *
  */
 public class TOMLParserTest {
-    
+
     @Test
     public void testShouldParseTableTestProperly() throws Exception {
         System.out.println("testShouldParseTableTestProperly");
@@ -54,5 +55,30 @@ public class TOMLParserTest {
         assertTrue(Double.isNaN(toml.getDouble("nan").get()));
 
     }
-    
+
+    @Test
+    public void testShouldParseArraysProperly() throws Exception {
+        System.out.println("testShouldParseArraysProperly");
+        TOML toml = TestUtil.parse("array-test.toml");
+
+        {
+            assertTrue(toml.getArray("integers").isPresent());
+            List<Object> integers = toml.getArray("integers").get();
+            assertEquals(3, integers.size());
+            assertEquals(1L, integers.get(0));
+            assertEquals(2L, integers.get(1));
+            assertEquals(3L, integers.get(2));
+        }
+
+        {
+            assertTrue(toml.getArray("nested_arrays_of_ints").isPresent());
+            List<Object> nested_arrays_of_ints = toml.getArray("nested_arrays_of_ints").get();
+            assertEquals(2, nested_arrays_of_ints.size());
+            assertTrue(nested_arrays_of_ints.get(0) instanceof List);
+            assertEquals(2, ((List)nested_arrays_of_ints.get(0)).size());
+            assertEquals(3, ((List)nested_arrays_of_ints.get(1)).size());
+        }
+
+    }
+
 }

@@ -21,6 +21,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import net.vieiro.toml.antlr4.TomlParserInternal;
@@ -47,9 +48,11 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     private List<String> errors;
     private HashMap<Object, Object> root;
     private HashMap<Object, Object> currentTable;
+    private Stack<ArrayList<Object>> arrayStack;
 
     public TOMLVisitor() {
         this.errors = new ArrayList<String>();
+        this.arrayStack = new Stack<>();
     }
 
     public List<String> getErrors() {
@@ -254,12 +257,23 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitArray_(TomlParserInternal.Array_Context ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArrayList<Object> array = new ArrayList<Object>();
+        arrayStack.push(array);
+        ctx.array_values().accept(this);
+        arrayStack.pop();
+        return array;
     }
 
     @Override
     public Object visitArray_values(TomlParserInternal.Array_valuesContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ArrayList<Object> current = arrayStack.peek();
+        if (ctx.value() != null) {
+            current.add(ctx.value().accept(this));
+        }
+        if (ctx.array_values() != null) {
+            ctx.array_values().accept(this);
+        }
+        return current;
     }
 
     @Override

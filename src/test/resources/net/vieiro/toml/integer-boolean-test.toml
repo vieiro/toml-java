@@ -32,3 +32,7 @@ flt7 = 6.626e-34
 inf=inf
 minus_inf = -inf
 nan=nan
+
+true = true
+false = false
+

@@ -101,8 +101,18 @@ public final class TOML {
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The List value, if any, or Optional.empty() otherwise.
      */
-     public Optional<List> getArray(String path) {
+    public Optional<List> getArray(String path) {
         return get(path, List.class);
+    }
+
+    /**
+     * Retrieves a Boolean value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The Boolean value, if any, or Optional.empty() otherwise.
+     */
+     public Optional<Boolean> getBoolean(String path) {
+        return get(path, Boolean.class);
     }
 
 }

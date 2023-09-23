@@ -247,7 +247,8 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitBool_(TomlParserInternal.Bool_Context ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String BOOLEAN = ctx.BOOLEAN().getText();
+        return Boolean.valueOf(BOOLEAN);
     }
 
     @Override

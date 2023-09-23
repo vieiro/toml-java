@@ -39,9 +39,9 @@ public class TOMLParserTest {
     }
 
     @Test
-    public void testShouldParseIntegersProperly() throws Exception {
-        System.out.println("testShouldParseTableTestProperly");
-        TOML toml = TestUtil.parse("integer-test.toml");
+    public void testShouldParseIntegersBooleansProperly() throws Exception {
+        System.out.println("testShouldParseIntegersBooleansProperly");
+        TOML toml = TestUtil.parse("integer-boolean-test.toml");
 
         assertEquals(5_349_221L, toml.getLong("int6").orElse(-1L));
         assertEquals(0xDEADBEEFL, toml.getLong("hex1").orElse(-1L));
@@ -53,6 +53,8 @@ public class TOMLParserTest {
         assertEquals(Double.NEGATIVE_INFINITY, toml.getDouble("minus_inf").orElse(-1.0));
         assertTrue(toml.getDouble("nan").isPresent());
         assertTrue(Double.isNaN(toml.getDouble("nan").get()));
+
+        assertEquals(Boolean.TRUE, toml.getBoolean("true").orElse(false));
 
     }
 

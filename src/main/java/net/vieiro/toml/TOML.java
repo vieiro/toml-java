@@ -58,7 +58,7 @@ public final class TOML {
                 map = (Map) o;
             } else {
                 if (clazz.isAssignableFrom(o.getClass())) {
-                    return Optional.of((T)o);
+                    return Optional.of((T) o);
                 }
             }
         }
@@ -81,8 +81,18 @@ public final class TOML {
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The Long value, if any, or Optional.empty() otherwise.
      */
-     public Optional<Long> getLong(String path) {
+    public Optional<Long> getLong(String path) {
         return get(path, Long.class);
+    }
+
+    /**
+     * Retrieves a Double value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The Double value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<Double> getDouble(String path) {
+        return get(path, Double.class);
     }
 
 }

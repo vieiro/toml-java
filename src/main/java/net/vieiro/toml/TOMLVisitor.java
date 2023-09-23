@@ -121,7 +121,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         if (key instanceof List) {
             List<Object> keys = (List<Object>) key;
             HashMap<Object, Object> newTable = createNestedTables(currentTable, keys, true);
-            newTable.put(keys.get(keys.size()-1), value);
+            newTable.put(keys.get(keys.size() - 1), value);
         }
         currentTable.put(key, value);
         return key;
@@ -232,7 +232,14 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitFloating_point(TomlParserInternal.Floating_pointContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (ctx.NAN() != null) {
+            return Double.NaN;
+        } else if (ctx.INF() != null) {
+            return (ctx.INF().getText().indexOf('-') == -1) ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
+        }
+        String doubleText = ctx.FLOAT().getText();
+        doubleText = doubleText.replace("_", "");
+        return Double.valueOf(doubleText);
     }
 
     @Override

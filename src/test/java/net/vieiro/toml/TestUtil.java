@@ -33,6 +33,8 @@ public final class TestUtil {
             TOML toml = TOMLParser.parseFromInputStream(input, StandardCharsets.UTF_8);
             List<String> errors = toml.getErrors();
 
+            System.out.format("Parsed %s%n", resource);
+            System.out.format("%s%n", toml.root);
             for (String error : errors) {
                 System.err.format("ERROR: %s%n", error);
             }

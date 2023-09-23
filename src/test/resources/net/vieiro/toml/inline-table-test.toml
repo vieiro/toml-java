@@ -1,0 +1,6 @@
+name = { first = "Tom", last = "Preston-Werner" }
+point = { x = 1, y = 2 }
+animal = { type.name = "pug" }
+nested = { brand = "Ford", details = { year = 1968, model ="Mustang"}}
+ahash = { version = "0.8", default-features = false, features = ["compile-time-rng"] }
+

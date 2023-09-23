@@ -16,11 +16,13 @@
 package net.vieiro.toml;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import net.vieiro.toml.antlr4.TomlParserInternal;
 import net.vieiro.toml.antlr4.TomlParserInternalVisitor;
 import org.antlr.v4.runtime.ANTLRErrorListener;
@@ -29,6 +31,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -115,6 +118,11 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     public Object visitKey_value(TomlParserInternal.Key_valueContext ctx) {
         Object key = ctx.key().accept(this);
         Object value = ctx.value().accept(this);
+        if (key instanceof List) {
+            List<Object> keys = (List<Object>) key;
+            HashMap<Object, Object> newTable = createNestedTables(currentTable, keys, true);
+            newTable.put(keys.get(keys.size()-1), value);
+        }
         currentTable.put(key, value);
         return key;
     }
@@ -146,17 +154,26 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         if (UNQUOTED_KEY.indexOf('.') != -1) {
             throw new IllegalStateException("Grammar shouldn't allow dots in UNQUOTED_KEY.");
         }
-        return UNQUOTED_KEY;
+        return UNQUOTED_KEY.trim();
     }
 
     @Override
     public Object visitQuoted_key(TomlParserInternal.Quoted_keyContext ctx) {
+        if (ctx.BASIC_STRING() != null) {
+            String BASIC_STRING = ctx.BASIC_STRING().getText();
+            // Remove quotes
+            BASIC_STRING = BASIC_STRING.substring(1, BASIC_STRING.length() - 1);
+            return BASIC_STRING.trim();
+        } else if (ctx.LITERAL_STRING() != null) {
+            String LITERAL_STRING = ctx.LITERAL_STRING().getText();
+            return LITERAL_STRING.trim();
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Object visitDotted_key(TomlParserInternal.Dotted_keyContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return ctx.simple_key().stream().map(simple_key -> simple_key.accept(this)).collect(Collectors.toList());
     }
 
     @Override
@@ -258,13 +275,48 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Creates a collection of nested tables given a set of keys.
+     *
+     * @param baseTable The base table
+     * @param keys The keys
+     * @param butLastKey true to avoid using the last key (possibly because it's
+     * reserved for a literal)
+     * @return The last table created
+     * @throws ParseCancellationException if any of the keys is already reserved
+     * for a non-table object
+     */
+    private HashMap<Object, Object> createNestedTables(HashMap<Object, Object> baseTable, List<Object> keys, boolean butLastKey) {
+        HashMap<Object, Object> previousTable = baseTable;
+        int len = butLastKey ? keys.size() - 1 : keys.size();
+        for (int i = 0; i < len; i++) {
+            Object key = keys.get(i);
+            Object o = previousTable.get(key);
+            if (o == null) {
+                HashMap<Object, Object> newTable = new HashMap<>();
+                previousTable.put(key, newTable);
+                previousTable = newTable;
+            } else if (o instanceof Map) {
+                previousTable = (HashMap<Object, Object>) o;
+            } else {
+                String message = String.format("Key '%s' in '%s' is already used for a non-table object",
+                        key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
+                throw new ParseCancellationException(message);
+            }
+        }
+        return previousTable;
+
+    }
+
     @Override
     public Object visitStandard_table(TomlParserInternal.Standard_tableContext ctx) {
         Object newTableKey = ctx.key().accept(this);
-        HashMap<Object, Object> newTable = new HashMap<>();
-        root.put(newTableKey, newTable);
-        currentTable = newTable;
-        return newTable;
+        if (newTableKey instanceof List) {
+            currentTable = createNestedTables(root, (List<Object>) newTableKey, false);
+        } else {
+            currentTable = createNestedTables(root, Arrays.asList(newTableKey), false);
+        }
+        return currentTable;
     }
 
     @Override

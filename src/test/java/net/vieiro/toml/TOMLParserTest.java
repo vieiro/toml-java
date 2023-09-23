@@ -28,13 +28,15 @@ public class TOMLParserTest {
         System.out.println("testShouldParseTableTestProperly");
         TOML toml = TestUtil.parse("table-test.toml");
 
-        // System.out.format("%n%s%n", toml);
+        System.out.format("%n%s%n", toml);
 
         assertEquals("key1", toml.getString("key1").orElse(null));
         assertEquals("some string", toml.getString("table-1/key1").orElse(null));
         assertEquals("another string", toml.getString("table-2/key1").orElse(null));
 
         assertEquals(456, toml.getLong("table-2/key2").orElse(null));
+
+        assertEquals("pug", toml.getString("dog/tater.man/type/name").orElse(null));
     }
     
 }

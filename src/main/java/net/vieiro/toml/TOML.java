@@ -159,4 +159,19 @@ public final class TOML {
         return get(path, LocalTime.class);
     }
 
+    /**
+     * Retrieves a list of tables from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The List of tables, if any, or Optional.empty() otherwise.
+     */
+    public Optional<List<Map<Object, Object>>> getTableArray(String path) {
+        Optional<List> list = getArray(path);
+        if (list.isPresent()) {
+            List<Map<Object, Object>> tables = (List<Map<Object, Object>>) list.get();
+            return Optional.of(tables);
+        }
+        return Optional.empty();
+    }
+
 }

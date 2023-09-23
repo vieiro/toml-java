@@ -384,6 +384,52 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         return currentTable;
     }
 
+    private List<HashMap<Object, Object>> createArrayTable(HashMap<Object, Object> baseTable, List<Object> keys) {
+        HashMap<Object, Object> previousTable = baseTable;
+        if (keys.size() > 1) {
+            for (int i = 0; i < keys.size() - 1; i++) {
+                Object key = keys.get(i);
+                Object o = previousTable.get(key);
+                if (o == null) {
+                    HashMap<Object, Object> newTable = new HashMap<>();
+                    previousTable.put(key, newTable);
+                    previousTable = newTable;
+                } else if (o instanceof Map) {
+                    previousTable = (HashMap<Object, Object>) o;
+                } else {
+                    String message = String.format("Key '%s' in '%s' is already used for a non-table object",
+                            key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
+                    throw new ParseCancellationException(message);
+                }
+            }
+        }
+        Object lastKeyPart = keys.get(keys.size() - 1);
+        List<HashMap<Object, Object>> listOfTables = (List<HashMap<Object, Object>>) previousTable.get(lastKeyPart);
+        if (listOfTables == null) {
+            listOfTables = new ArrayList<>();
+            previousTable.put(lastKeyPart, listOfTables);
+        } else if (!(listOfTables instanceof List)) {
+            String message = String.format("Key '%s' in '%s' is already used for a non-table object",
+                    lastKeyPart, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
+            throw new ParseCancellationException(message);
+        }
+        return listOfTables;
+    }
+
+    @Override
+    public Object visitArray_table(TomlParserInternal.Array_tableContext ctx) {
+        Object newTableKey = ctx.key().accept(this);
+        List<HashMap<Object, Object>> tableArray = null;
+        if (newTableKey instanceof List) {
+            tableArray = createArrayTable(root, (List) newTableKey);
+        } else {
+            tableArray = createArrayTable(root, Arrays.asList(newTableKey));
+        }
+        currentTable = new HashMap<>();
+        tableArray.add(currentTable);
+        return tableArray;
+    }
+
     @Override
     public Object visitInline_table(TomlParserInternal.Inline_tableContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -396,11 +442,6 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitInline_table_keyvals_non_empty(TomlParserInternal.Inline_table_keyvals_non_emptyContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Object visitArray_table(TomlParserInternal.Array_tableContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

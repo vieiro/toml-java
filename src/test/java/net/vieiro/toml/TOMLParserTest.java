@@ -20,6 +20,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -136,6 +138,22 @@ public class TOMLParserTest {
 
         LocalTime lt1 = toml.getLocalTime("lt1").orElse(null);
         assertEquals(LocalTime.parse("07:32:00"), lt1);
+
+    }
+
+    @Test
+    public void testShouldParseProperlyArrayOfTables() throws Exception {
+        System.out.println("testShouldParseProperlyArrayOfTables");
+        TOML toml = TestUtil.parse("array-of-tables-test.toml");
+
+        Optional<List<Map<Object, Object>>> products = toml.getTableArray("products");
+
+        assertTrue(products.isPresent());
+        List<Map<Object, Object>> tables = products.get();
+
+        assertEquals(2, tables.get(0).size());
+        assertEquals(0, tables.get(1).size());
+        assertEquals(3, tables.get(2).size());
 
     }
 

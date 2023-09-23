@@ -15,6 +15,10 @@
  */
 package net.vieiro.toml;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -112,6 +116,26 @@ public class TOMLParserTest {
 
         String regex2 = toml.getString("regex2").orElse(null);
         assertEquals("I [dw]on't need \\d{2} apples", regex2);
+
+    }
+
+    @Test
+    public void testShouldParseOffsetDateTimProperly() throws Exception {
+        System.out.println("testShouldParseOffsetDateTimProperly");
+        TOML toml = TestUtil.parse("date-test.toml");
+
+        Instant odt1 = toml.getInstant("odt1").orElse(null);
+
+        assertEquals(Instant.parse("1979-05-27T07:32:00Z"), odt1);
+
+        LocalDateTime ldt1 = toml.getLocalDateTime("ldt1").orElse(null);
+        assertEquals(LocalDateTime.parse("1979-05-27T07:32:00"), ldt1);
+
+        LocalDate ld1 = toml.getLocalDate("ld1").orElse(null);
+        assertEquals(LocalDate.parse("1979-05-27"), ld1);
+
+        LocalTime lt1 = toml.getLocalTime("lt1").orElse(null);
+        assertEquals(LocalTime.parse("07:32:00"), lt1);
 
     }
 

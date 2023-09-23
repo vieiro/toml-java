@@ -15,6 +15,10 @@
  */
 package net.vieiro.toml;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -111,8 +115,48 @@ public final class TOML {
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The Boolean value, if any, or Optional.empty() otherwise.
      */
-     public Optional<Boolean> getBoolean(String path) {
+    public Optional<Boolean> getBoolean(String path) {
         return get(path, Boolean.class);
+    }
+
+    /**
+     * Retrieves a Instant value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The Instant value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<Instant> getInstant(String path) {
+        return get(path, Instant.class);
+    }
+
+    /**
+     * Retrieves a LocalDateTime value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The LocalDateTime value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<LocalDateTime> getLocalDateTime(String path) {
+        return get(path, LocalDateTime.class);
+    }
+
+    /**
+     * Retrieves a LocalDate value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The LocalDate value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<LocalDate> getLocalDate(String path) {
+        return get(path, LocalDate.class);
+    }
+
+    /**
+     * Retrieves a LocalTime value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The LocalTime value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<LocalTime> getLocalTime(String path) {
+        return get(path, LocalTime.class);
     }
 
 }

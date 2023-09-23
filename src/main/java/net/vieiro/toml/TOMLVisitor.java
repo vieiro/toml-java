@@ -15,6 +15,12 @@
  */
 package net.vieiro.toml;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -272,6 +278,24 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitDate_time(TomlParserInternal.Date_timeContext ctx) {
+        if (ctx.OFFSET_DATE_TIME() != null) {
+            String OFFSET_DATE_TIME = ctx.OFFSET_DATE_TIME().getText();
+            OFFSET_DATE_TIME = OFFSET_DATE_TIME.replace(" ", "T");
+            try {
+                return Instant.parse(OFFSET_DATE_TIME);
+            } catch (DateTimeParseException dtpe) {
+                return Instant.from(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(OFFSET_DATE_TIME));
+            }
+        } else if (ctx.LOCAL_DATE_TIME() != null) {
+            String LOCAL_DATE_TIME = ctx.LOCAL_DATE_TIME().getText();
+            return LocalDateTime.parse(LOCAL_DATE_TIME);
+        } else if (ctx.LOCAL_DATE() != null) {
+            String LOCAL_DATE = ctx.LOCAL_DATE().getText();
+            return LocalDate.parse(LOCAL_DATE);
+        } else if (ctx.LOCAL_TIME() != null) {
+            String LOCAL_TIME = ctx.LOCAL_TIME().getText();
+            return LocalTime.parse(LOCAL_TIME);
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

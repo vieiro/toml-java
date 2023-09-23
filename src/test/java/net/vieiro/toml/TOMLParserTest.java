@@ -77,9 +77,34 @@ public class TOMLParserTest {
             List<Object> nested_arrays_of_ints = toml.getArray("nested_arrays_of_ints").get();
             assertEquals(2, nested_arrays_of_ints.size());
             assertTrue(nested_arrays_of_ints.get(0) instanceof List);
-            assertEquals(2, ((List)nested_arrays_of_ints.get(0)).size());
-            assertEquals(3, ((List)nested_arrays_of_ints.get(1)).size());
+            assertEquals(2, ((List) nested_arrays_of_ints.get(0)).size());
+            assertEquals(3, ((List) nested_arrays_of_ints.get(1)).size());
         }
+
+    }
+
+    @Test
+    public void testShouldLineEndingBackslashMatch() {
+        String multiline = "The quick brown \\\n"
+                + "\n"
+                + "\n"
+                + "  fox jumps over \\\n"
+                + "    the lazy dog.";
+        String result = TOMLVisitor.LINE_ENDING_BACKSLASH.matcher(multiline).replaceAll("");
+        assertEquals("The quick brown fox jumps over the lazy dog.", result);
+    }
+
+    @Test
+    public void testShouldParseStringsProperly() throws Exception {
+        System.out.println("testShouldParseStringsProperly");
+        TOML toml = TestUtil.parse("string-test.toml");
+
+        String str1 = toml.getString("str1").orElse(null);
+        String str2 = toml.getString("str2").orElse(null);
+        String str3 = toml.getString("str3").orElse(null);
+
+        assertEquals(str1, str2);
+        assertEquals(str1, str3);
 
     }
 

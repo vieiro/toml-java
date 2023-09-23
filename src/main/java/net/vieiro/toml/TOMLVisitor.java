@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import net.vieiro.toml.antlr4.TomlParserInternal;
 import net.vieiro.toml.antlr4.TomlParserInternalVisitor;
@@ -199,12 +200,20 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    static final Pattern LINE_ENDING_BACKSLASH = Pattern.compile("\\\\\r?\\n[\\s]*");
+
     @Override
     public Object visitString(TomlParserInternal.StringContext ctx) {
         if (ctx.BASIC_STRING() != null) {
             String basicString = ctx.BASIC_STRING().getText();
             // Remove quotes from basicString
             return basicString.substring(1, basicString.length() - 1);
+        } else if (ctx.ML_BASIC_STRING() != null) {
+            String mlBasicString = ctx.ML_BASIC_STRING().getText();
+            mlBasicString = mlBasicString.substring(3, mlBasicString.length()-3);
+            mlBasicString = LINE_ENDING_BACKSLASH.matcher(mlBasicString).replaceAll("");
+            mlBasicString = mlBasicString.replaceAll("^\r?\n", "");
+            return mlBasicString;
         }
         throw new UnsupportedOperationException("Not supported yet.");
     }

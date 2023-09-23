@@ -17,22 +17,72 @@ package net.vieiro.toml;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * TOML is the result from parsing a TOML file.
  */
 public final class TOML {
 
-    final Object root;
+    final Map<Object, Object> root;
     final List<String> errors;
 
-    TOML(Object root, List<String> errors) {
+    TOML(Map<Object, Object> root, List<String> errors) {
         this.root = root;
         this.errors = Collections.unmodifiableList(errors);
     }
 
     public List<String> getErrors() {
         return errors;
+    }
+
+    @Override
+    public String toString() {
+        return root == null ? "null" : root.toString();
+    }
+
+    private <T> Optional<T> get(String path, Class<T> clazz) {
+        String[] parts = path.split("/");
+        Map<Object, Object> map = root;
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (!map.containsKey(part)) {
+                return Optional.empty();
+            }
+            Object o = map.get(part);
+            if (i < parts.length - 1) {
+                if (!(o instanceof Map)) {
+                    return Optional.empty();
+                }
+                map = (Map) o;
+            } else {
+                if (clazz.isAssignableFrom(o.getClass())) {
+                    return Optional.of((T)o);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves a String value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The String value, if any, or Optional.empty() otherwise.
+     */
+    public Optional<String> getString(String path) {
+        return get(path, String.class);
+    }
+
+    /**
+     * Retrieves a Long value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The Long value, if any, or Optional.empty() otherwise.
+     */
+     public Optional<Long> getLong(String path) {
+        return get(path, Long.class);
     }
 
 }

@@ -16,6 +16,8 @@
 package net.vieiro.toml;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import net.vieiro.toml.antlr4.TomlLexerInternal;
 import net.vieiro.toml.antlr4.TomlParserInternal;
@@ -29,8 +31,32 @@ import org.antlr.v4.runtime.TokenStream;
  */
 public final class TOMLParser {
 
-    public static TOML parse(String filename, Charset charset) throws IOException {
+    public static TOML parseFromString(String content) throws IOException {
+        return parse(CharStreams.fromString(content));
+    }
+
+    public static TOML parseFromReader(Reader reader, String filename) throws IOException {
+        return parse(CharStreams.fromReader(reader, filename));
+    }
+
+    public static TOML parseFromReader(Reader reader) throws IOException {
+        return parse(CharStreams.fromReader(reader));
+    }
+
+    public static TOML parseFromFilename(String filename) throws IOException {
+        return parse(CharStreams.fromFileName(filename));
+    }
+
+    public static TOML parseFromFilename(String filename, Charset charset) throws IOException {
         return parse(CharStreams.fromFileName(filename, charset));
+    }
+
+    public static TOML parseFromInputStream(InputStream input) throws IOException {
+        return parse(CharStreams.fromStream(input));
+    }
+
+    public static TOML parseFromInputStream(InputStream input, Charset encoding) throws IOException {
+        return parse(CharStreams.fromStream(input, encoding));
     }
 
     private static TOML parse(CharStream input) {
@@ -48,7 +74,7 @@ public final class TOMLParser {
 
         Object result = parser.document().accept(visitor);
 
-        return new TOML(result, visitor.getErrors());
+        return new TOML(visitor.getRoot(), visitor.getErrors());
     }
 
 }

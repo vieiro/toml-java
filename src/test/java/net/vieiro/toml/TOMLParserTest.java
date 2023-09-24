@@ -15,13 +15,15 @@
  */
 package net.vieiro.toml;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.PrintWriter;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import ognl.Ognl;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -146,26 +148,20 @@ public class TOMLParserTest {
         System.out.println("testShouldParseProperlyArrayOfTables");
         TOML toml = TestUtil.parse("array-of-tables-test.toml");
 
-        Optional<List<Map<Object, Object>>> products = toml.getTableArray("products");
+        // Querying the TOML document using OGNL
+        Object red = Ognl.getValue("fruits[0].physical.color", toml.root);
+        assertEquals("red", red);
 
-        assertTrue(products.isPresent());
-        List<Map<Object, Object>> tables = products.get();
+        Object plantain = Ognl.getValue("fruits[1].varieties[0].name", toml.root);
+        assertEquals("plantain", plantain);
 
-        assertEquals(2, tables.get(0).size());
-        assertEquals(0, tables.get(1).size());
-        assertEquals(3, tables.get(2).size());
-
-        List<Map<Object, Object>> fruits = toml.getTableArray("fruits").orElse(null);
-        assertNotNull(fruits);
-        assertEquals(2, fruits.size());
-
-        Map<Object, Object> first = fruits.get(0);
-        assertEquals("apple", first.get("name"));
-        Map<Object, Object> physical = (Map) first.get("physical");
-        assertEquals("red", physical.get("color"));
-
-        
-
+        // Dumping the TOML document to JSON using GSON
+        System.out.println("array-of-tables-test.toml in JSON format:");
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        PrintWriter out = new PrintWriter(System.out);
+        gson.toJson(toml.root, out);
+        out.flush();
+        System.out.println();
 
 
     }

@@ -41,6 +41,10 @@ public final class TOML {
         return errors;
     }
 
+    public Map<Object, Object> getRoot() {
+        return root;
+    }
+
     @Override
     public String toString() {
         return root == null ? "null" : root.toString();

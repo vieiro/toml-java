@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import ognl.Ognl;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseTableTestProperly() throws Exception {
         System.out.println("testShouldParseTableTestProperly");
-        TOML toml = TestUtil.parse("table-test.toml");
+        TOML toml = TestUtil.parse("table-test.toml", false);
 
         assertEquals("key1", toml.getString("key1").orElse(null));
         assertEquals("some string", toml.getString("table-1/key1").orElse(null));
@@ -49,7 +50,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseIntegersBooleansProperly() throws Exception {
         System.out.println("testShouldParseIntegersBooleansProperly");
-        TOML toml = TestUtil.parse("integer-boolean-test.toml");
+        TOML toml = TestUtil.parse("integer-boolean-test.toml", false);
 
         assertEquals(5_349_221L, toml.getLong("int6").orElse(-1L));
         assertEquals(0xDEADBEEFL, toml.getLong("hex1").orElse(-1L));
@@ -69,7 +70,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseArraysProperly() throws Exception {
         System.out.println("testShouldParseArraysProperly");
-        TOML toml = TestUtil.parse("array-test.toml");
+        TOML toml = TestUtil.parse("array-test.toml", false);
 
         {
             assertTrue(toml.getArray("integers").isPresent());
@@ -105,7 +106,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseStringsProperly() throws Exception {
         System.out.println("testShouldParseStringsProperly");
-        TOML toml = TestUtil.parse("string-test.toml");
+        TOML toml = TestUtil.parse("string-test.toml", false);
 
         String str1 = toml.getString("str1").orElse(null);
         String str2 = toml.getString("str2").orElse(null);
@@ -126,7 +127,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseOffsetDateTimProperly() throws Exception {
         System.out.println("testShouldParseOffsetDateTimProperly");
-        TOML toml = TestUtil.parse("date-test.toml");
+        TOML toml = TestUtil.parse("date-test.toml", false);
 
         Instant odt1 = toml.getInstant("odt1").orElse(null);
 
@@ -146,7 +147,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseProperlyArrayOfTables() throws Exception {
         System.out.println("testShouldParseProperlyArrayOfTables");
-        TOML toml = TestUtil.parse("array-of-tables-test.toml");
+        TOML toml = TestUtil.parse("array-of-tables-test.toml", false);
 
         // Querying the TOML document using OGNL
         Object red = Ognl.getValue("fruits[0].physical.color", toml.root);
@@ -167,7 +168,7 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseInlineTablesProperly() throws Exception {
         System.out.println("testShouldParseInlineTablesProperly");
-        TOML toml = TestUtil.parse("inline-table-test.toml");
+        TOML toml = TestUtil.parse("inline-table-test.toml", true);
 
         String mustang = toml.getString("nested/details/model").orElse(null);
         assertEquals("Mustang", mustang);
@@ -178,6 +179,24 @@ public class TOMLParserTest {
         String pug = toml.getString("animal/type/name").orElse(null);
         assertEquals("pug", pug);
 
+    }
+
+    @Test
+    public void testShouldParseArrowParquetCargoTOML() throws Exception {
+        System.out.println("testShouldParseArrowParquetCargoTOML");
+        TOML toml = TestUtil.parse("arrow-parquet-Cargo.toml", false);
+        
+        List<Object> bin = toml.getArray("bin").orElse(null);
+        assertNotNull(bin);
+        Map bin1 = (Map) bin.get(1);
+        assertNotNull(bin1);
+        List<Object> required_features = (List<Object>) bin1.get("required-features");
+        assertEquals("cli", required_features.get(1));
+
+        Object cli = Ognl.getValue("#this.get('bin')[1].get('required-features')[1]", toml.root);
+        assertEquals("cli", cli);
+
+        
     }
 
 }

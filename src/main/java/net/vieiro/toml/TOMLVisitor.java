@@ -24,6 +24,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -203,7 +204,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             return ctx.array_().accept(this);
         } else if (ctx.inline_table() != null) {
             return ctx.inline_table().accept(this);
-       }
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -304,7 +305,9 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     public Object visitArray_(TomlParserInternal.Array_Context ctx) {
         ArrayList<Object> array = new ArrayList<Object>();
         arrayStack.push(array);
-        ctx.array_values().accept(this);
+        if (ctx.array_values() != null) {
+            ctx.array_values().accept(this);
+        }
         arrayStack.pop();
         return array;
     }
@@ -470,7 +473,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         HashMap<Object, Object> inlineTable = new HashMap<>();
         if (ctx.key() != null) {
             List<Object> keys = ctx.key().stream().map((k) -> k.accept(this)).collect(Collectors.toList());
-            List<Object> values = ctx.value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
+            List<Object> values = ctx.inline_value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
 
             for (int i = 0; i < keys.size(); i++) {
                 Object key = keys.get(i);
@@ -489,7 +492,35 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
+    public Object visitInner_array(TomlParserInternal.Inner_arrayContext ctx) {
+        if (ctx.inline_value() != null) {
+            return ctx.inline_value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
     public Object visitErrorNode(ErrorNode en) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object visitInline_value(TomlParserInternal.Inline_valueContext ctx) {
+        if (ctx.string() != null) {
+            return ctx.string().accept(this);
+        } else if (ctx.integer() != null) {
+            return ctx.integer().accept(this);
+        } else if (ctx.floating_point() != null) {
+            return ctx.floating_point().accept(this);
+        } else if (ctx.bool_() != null) {
+            return ctx.bool_().accept(this);
+        } else if (ctx.date_time() != null) {
+            return ctx.date_time().accept(this);
+        } else if (ctx.inner_array()!= null) {
+            return ctx.inner_array().accept(this);
+        } else if (ctx.inline_table() != null) {
+            return ctx.inline_table().accept(this);
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

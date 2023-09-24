@@ -26,18 +26,23 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public final class TestUtil {
 
-    public static TOML parse(String resource) throws IOException {
+    public static TOML parse(String resource, boolean verbose) throws IOException {
         try (InputStream input = TestUtil.class.getResourceAsStream(resource)) {
             System.out.format("Reading test file '%s'%n", resource);
             assertNotNull(input, "Missing test resource '" + resource + "'");
             TOML toml = TOMLParser.parseFromInputStream(input, StandardCharsets.UTF_8);
             List<String> errors = toml.getErrors();
 
-            System.out.format("Parsed %s%n", resource);
-            System.out.format("%s%n", toml.root);
+            if (verbose) {
+                System.out.format("Parsed %s%n", resource);
+                System.out.format("%s%n", toml.root);
+            }
+            
             for (String error : errors) {
                 System.err.format("ERROR: %s%n", error);
             }
+            System.err.flush();
+            assertTrue(errors.isEmpty(), String.format("Test %s has %d errors.", resource, errors.size()));
 
             return toml;
         }

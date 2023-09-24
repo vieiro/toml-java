@@ -17,7 +17,6 @@ package net.vieiro.toml;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,9 +27,9 @@ public final class TestUtil {
 
     public static TOML parse(String resource, boolean verbose) throws IOException {
         try (InputStream input = TestUtil.class.getResourceAsStream(resource)) {
-            System.out.format("Reading test file '%s'%n", resource);
+            System.out.format("  - Reading test file '%s'%n", resource);
             assertNotNull(input, "Missing test resource '" + resource + "'");
-            TOML toml = TOMLParser.parseFromInputStream(input, StandardCharsets.UTF_8);
+            TOML toml = TOMLParser.parseFromInputStream(input);
             List<String> errors = toml.getErrors();
 
             if (verbose) {

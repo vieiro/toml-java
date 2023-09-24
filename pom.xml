@@ -24,6 +24,17 @@
         <url>https://github.com/vieiro/toml-java</url>
     </scm>
 
+    <developers>
+        <developer>
+            <id>vieiro</id>
+            <name>Antonio Vieiro</name>
+            <email>public@vieiro.net</email>
+            <organization>Github</organization>
+            <url>https://github.com/vieiro</url>
+            <timezone>Europe/Madrid</timezone>
+        </developer>
+    </developers>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
@@ -31,11 +42,13 @@
     </properties>
 
     <dependencies>
+        <!-- runtime dependencies -->
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <version>4.13.1</version>
         </dependency>
+        <!-- test dependencies below -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -54,9 +67,29 @@
             <version>2.10.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.flipkart.zjsonpatch</groupId>
+            <artifactId>zjsonpatch</artifactId>
+            <version>0.4.14</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
+        <resources>
+            <!-- Let's include the ANTLR4 grammars as resources too, so they're propagated in the -sources.jar file -->
+            <resource>
+                <directory>src/main/antlr4</directory>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
@@ -70,6 +103,36 @@
                         <configuration>
                             <visitor>true</visitor>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <excludePackageNames>net.vieiro.toml.antlr4</excludePackageNames>
+                    <sourceFileExcludes>net/vieiro/toml/antlr4/*.java</sourceFileExcludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

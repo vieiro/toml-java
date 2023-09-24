@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import net.vieiro.toml.antlr4.TomlLexerInternal;
 import net.vieiro.toml.antlr4.TomlParserInternal;
 import org.antlr.v4.runtime.CharStream;
@@ -31,32 +32,63 @@ import org.antlr.v4.runtime.TokenStream;
  */
 public final class TOMLParser {
 
+    private TOMLParser() {
+    }
+
+    /**
+     * Parse a TOML document in a String.
+     *
+     * @param content The TOML document.
+     * @return A TOML object with the result of parsing.
+     * @throws IOException If an I/O error happens.
+     */
     public static TOML parseFromString(String content) throws IOException {
         return parse(CharStreams.fromString(content));
     }
 
+    /**
+     * Parse a TOML document from a Reader.
+     *
+     * @param reader The Reader.
+     * @param filename The name of the file, used in error messages.
+     * @return A TOML object with the result of parsing.
+     * @throws IOException If an I/O error happens.
+     */
     public static TOML parseFromReader(Reader reader, String filename) throws IOException {
         return parse(CharStreams.fromReader(reader, filename));
     }
 
+    /**
+     * Parse a TOML document from a Reader.
+     *
+     * @param reader The Reader.
+     * @return A TOML object with the result of parsing.
+     * @throws IOException If an I/O error happens.
+     */
     public static TOML parseFromReader(Reader reader) throws IOException {
         return parse(CharStreams.fromReader(reader));
     }
 
+    /**
+     * Parse a TOML document from a file.
+     *
+     * @param filename The name of the file.
+     * @return A TOML object with the result of parsing.
+     * @throws IOException If an I/O error happens.
+     */
     public static TOML parseFromFilename(String filename) throws IOException {
-        return parse(CharStreams.fromFileName(filename));
+        return parse(CharStreams.fromFileName(filename, StandardCharsets.UTF_8));
     }
 
-    public static TOML parseFromFilename(String filename, Charset charset) throws IOException {
-        return parse(CharStreams.fromFileName(filename, charset));
-    }
-
+    /**
+     * Parse a TOML document from an InputStream.
+     * Uses UTF-8 as the encoding.
+     * @param input The InputStream.
+     * @return A TOML object with the result of parsing.
+     * @throws IOException If an I/O error happens.
+     */
     public static TOML parseFromInputStream(InputStream input) throws IOException {
-        return parse(CharStreams.fromStream(input));
-    }
-
-    public static TOML parseFromInputStream(InputStream input, Charset encoding) throws IOException {
-        return parse(CharStreams.fromStream(input, encoding));
+        return parse(CharStreams.fromStream(input, StandardCharsets.UTF_8));
     }
 
     private static TOML parse(CharStream input) {
@@ -72,7 +104,7 @@ public final class TOMLParser {
         parser.removeErrorListeners();
         parser.addErrorListener(visitor);
 
-        Object result = parser.document().accept(visitor);
+        parser.document().accept(visitor);
 
         return new TOML(visitor.getRoot(), visitor.getErrors());
     }

@@ -25,7 +25,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * TOML is the result from parsing a TOML file.
+ * TOML is the result from parsing a TOML file. This class includes some methods
+ * for querying the generated object-tree, for more advanced querying consider
+ * using a specific object-tree querying library such as OGNL, Apache Commons
+ * EL, etc.
  */
 public final class TOML {
 
@@ -37,19 +40,35 @@ public final class TOML {
         this.errors = Collections.unmodifiableList(errors);
     }
 
+    /**
+     * Returns a list of the syntax errors generated during parsing.
+     *
+     * @return A list of errors generated during parsing.
+     */
     public List<String> getErrors() {
         return errors;
     }
 
+    /**
+     * Returns the root table representing the document.
+     *
+     * @return The root table representing the parsed TOML document.
+     */
     public Map<Object, Object> getRoot() {
         return root;
     }
 
+    /**
+     * Prints out the object tree.
+     * For debugging purposes.
+     * @return A String representation of the object tree.
+     */
     @Override
     public String toString() {
         return root == null ? "null" : root.toString();
     }
 
+    @SuppressWarnings("unchecked")
     private <T> Optional<T> get(String path, Class<T> clazz) {
         String[] parts = path.split("/");
         Map<Object, Object> map = root;
@@ -164,10 +183,28 @@ public final class TOML {
     }
 
     /**
+     * Retrieves a table from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The Map stored in the given path, or Optional.empty() otherwise.
+     */
+    @SuppressWarnings("unchecked")
+    public Optional<Map<Object, Object>> getTable(String path) {
+        Optional<Map> map = get(path, Map.class);
+        if (map.isPresent()) {
+            Map<Object, Object> mapOO = (Map<Object, Object>) map.get();
+            return Optional.of(mapOO);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Retrieves a list of tables from this TOML object.
+     *
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The List of tables, if any, or Optional.empty() otherwise.
      */
+    @SuppressWarnings("unchecked")
     public Optional<List<Map<Object, Object>>> getTableArray(String path) {
         Optional<List> list = getArray(path);
         if (list.isPresent()) {

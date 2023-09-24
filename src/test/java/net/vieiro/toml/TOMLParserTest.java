@@ -68,6 +68,7 @@ public class TOMLParserTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testShouldParseArraysProperly() throws Exception {
         System.out.println("testShouldParseArraysProperly");
         TOML toml = TestUtil.parse("array-test.toml", false);
@@ -147,7 +148,8 @@ public class TOMLParserTest {
     @Test
     public void testShouldParseProperlyArrayOfTables() throws Exception {
         System.out.println("testShouldParseProperlyArrayOfTables");
-        TOML toml = TestUtil.parse("array-of-tables-test.toml", false);
+        boolean verbose = false;
+        TOML toml = TestUtil.parse("array-of-tables-test.toml", verbose);
 
         // Querying the TOML document using OGNL
         Object red = Ognl.getValue("fruits[0].physical.color", toml.root);
@@ -156,19 +158,21 @@ public class TOMLParserTest {
         Object plantain = Ognl.getValue("fruits[1].varieties[0].name", toml.root);
         assertEquals("plantain", plantain);
 
-        // Dumping the TOML document to JSON using GSON
-        System.out.println("array-of-tables-test.toml in JSON format:");
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        PrintWriter out = new PrintWriter(System.out);
-        gson.toJson(toml.root, out);
-        out.flush();
-        System.out.println();
+        if (verbose) {
+            // Dumping the TOML document to JSON using GSON
+            System.out.println("array-of-tables-test.toml in JSON format:");
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            PrintWriter out = new PrintWriter(System.out);
+            gson.toJson(toml.root, out);
+            out.flush();
+            System.out.println();
+        }
     }
 
     @Test
     public void testShouldParseInlineTablesProperly() throws Exception {
         System.out.println("testShouldParseInlineTablesProperly");
-        TOML toml = TestUtil.parse("inline-table-test.toml", true);
+        TOML toml = TestUtil.parse("inline-table-test.toml", false);
 
         String mustang = toml.getString("nested/details/model").orElse(null);
         assertEquals("Mustang", mustang);
@@ -182,10 +186,11 @@ public class TOMLParserTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testShouldParseArrowParquetCargoTOML() throws Exception {
         System.out.println("testShouldParseArrowParquetCargoTOML");
         TOML toml = TestUtil.parse("arrow-parquet-Cargo.toml", false);
-        
+
         List<Object> bin = toml.getArray("bin").orElse(null);
         assertNotNull(bin);
         Map bin1 = (Map) bin.get(1);
@@ -196,7 +201,6 @@ public class TOMLParserTest {
         Object cli = Ognl.getValue("#this.get('bin')[1].get('required-features')[1]", toml.root);
         assertEquals("cli", cli);
 
-        
     }
 
 }

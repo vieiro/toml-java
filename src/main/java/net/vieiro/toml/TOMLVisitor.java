@@ -127,6 +127,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object visitKey_value(TomlParserInternal.Key_valueContext ctx) {
         Object key = ctx.key().accept(this);
         Object value = ctx.value().accept(this);
@@ -355,6 +356,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
      * @throws ParseCancellationException if any of the keys is already reserved
      * for a non-table object
      */
+    @SuppressWarnings("unchecked")
     private HashMap<Object, Object> createNestedTables(HashMap<Object, Object> baseTable, List<Object> keys, boolean butLastKey) {
         HashMap<Object, Object> previousTable = baseTable;
         int len = butLastKey ? keys.size() - 1 : keys.size();
@@ -388,6 +390,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object visitStandard_table(TomlParserInternal.Standard_tableContext ctx) {
         Object newTableKey = ctx.key().accept(this);
         if (newTableKey instanceof List) {
@@ -398,6 +401,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         return currentTable;
     }
 
+    @SuppressWarnings("unchecked")
     private List<HashMap<Object, Object>> createArrayTable(HashMap<Object, Object> baseTable, List<Object> keys) {
         HashMap<Object, Object> previousTable = baseTable;
         if (keys.size() > 1) {
@@ -440,6 +444,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object visitArray_table(TomlParserInternal.Array_tableContext ctx) {
         Object newTableKey = ctx.key().accept(this);
         List<HashMap<Object, Object>> tableArray = null;
@@ -469,6 +474,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Object visitInline_table(TomlParserInternal.Inline_tableContext ctx) {
         HashMap<Object, Object> inlineTable = new HashMap<>();
         if (ctx.key() != null) {

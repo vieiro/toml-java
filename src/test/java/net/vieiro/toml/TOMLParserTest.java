@@ -155,6 +155,19 @@ public class TOMLParserTest {
         assertEquals(0, tables.get(1).size());
         assertEquals(3, tables.get(2).size());
 
+        List<Map<Object, Object>> fruits = toml.getTableArray("fruits").orElse(null);
+        assertNotNull(fruits);
+        assertEquals(2, fruits.size());
+
+        Map<Object, Object> first = fruits.get(0);
+        assertEquals("apple", first.get("name"));
+        Map<Object, Object> physical = (Map) first.get("physical");
+        assertEquals("red", physical.get("color"));
+
+        
+
+
+
     }
 
 }

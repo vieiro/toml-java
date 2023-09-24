@@ -161,7 +161,6 @@ public final class TOML {
 
     /**
      * Retrieves a list of tables from this TOML object.
-     *
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The List of tables, if any, or Optional.empty() otherwise.
      */

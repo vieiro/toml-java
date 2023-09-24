@@ -363,6 +363,16 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
                 previousTable = newTable;
             } else if (o instanceof Map) {
                 previousTable = (HashMap<Object, Object>) o;
+            } else if (o instanceof List) {
+                // Is this an array table?
+                List list = (List) o;
+                Object last = list.get(list.size() - 1);
+                if (!(last instanceof HashMap)) {
+                    String message = String.format("Key '%s' in '%s' is already used for a non-table object",
+                            key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
+                    throw new ParseCancellationException(message);
+                }
+                previousTable = (HashMap<Object, Object>) last;
             } else {
                 String message = String.format("Key '%s' in '%s' is already used for a non-table object",
                         key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
@@ -396,6 +406,15 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
                     previousTable = newTable;
                 } else if (o instanceof Map) {
                     previousTable = (HashMap<Object, Object>) o;
+                } else if (o instanceof List) {
+                    List list = (List) o;
+                    Object last = list.get(list.size() - 1);
+                    if (!(last instanceof HashMap)) {
+                        String message = String.format("Key '%s' in '%s' is already used for a non-table object",
+                                key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));
+                        throw new ParseCancellationException(message);
+                    }
+                    previousTable = (HashMap<Object, Object>) last;
                 } else {
                     String message = String.format("Key '%s' in '%s' is already used for a non-table object",
                             key, keys.stream().map(Object::toString).collect(Collectors.joining(".")));

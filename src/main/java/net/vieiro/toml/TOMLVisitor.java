@@ -55,6 +55,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     private List<String> errors;
     private HashMap<Object, Object> root;
     private HashMap<Object, Object> currentTable;
+    private HashMap<Object, Object> currentInlineTable;
     private Stack<ArrayList<Object>> arrayStack;
 
     public TOMLVisitor() {
@@ -202,7 +203,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             return ctx.array_().accept(this);
         } else if (ctx.inline_table() != null) {
             return ctx.inline_table().accept(this);
-        }
+       }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -450,21 +451,6 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitInline_table(TomlParserInternal.Inline_tableContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Object visitInline_table_keyvals(TomlParserInternal.Inline_table_keyvalsContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Object visitInline_table_keyvals_non_empty(TomlParserInternal.Inline_table_keyvals_non_emptyContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public Object visit(ParseTree pt) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -477,6 +463,29 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     @Override
     public Object visitTerminal(TerminalNode tn) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Object visitInline_table(TomlParserInternal.Inline_tableContext ctx) {
+        HashMap<Object, Object> inlineTable = new HashMap<>();
+        if (ctx.key() != null) {
+            List<Object> keys = ctx.key().stream().map((k) -> k.accept(this)).collect(Collectors.toList());
+            List<Object> values = ctx.value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
+
+            for (int i = 0; i < keys.size(); i++) {
+                Object key = keys.get(i);
+                Object value = values.get(i);
+
+                if (key instanceof List) {
+                    List<Object> dottedKey = (List<Object>) key;
+                    HashMap<Object, Object> lastTable = createNestedTables(inlineTable, dottedKey, true);
+                    lastTable.put(dottedKey.get(dottedKey.size() - 1), value);
+                } else {
+                    inlineTable.put(key, value);
+                }
+            }
+        }
+        return inlineTable;
     }
 
     @Override

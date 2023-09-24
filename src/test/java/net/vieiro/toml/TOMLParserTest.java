@@ -162,7 +162,21 @@ public class TOMLParserTest {
         gson.toJson(toml.root, out);
         out.flush();
         System.out.println();
+    }
 
+    @Test
+    public void testShouldParseInlineTablesProperly() throws Exception {
+        System.out.println("testShouldParseInlineTablesProperly");
+        TOML toml = TestUtil.parse("inline-table-test.toml");
+
+        String mustang = toml.getString("nested/details/model").orElse(null);
+        assertEquals("Mustang", mustang);
+
+        Long year = toml.getLong("nested/details/year").orElse(0L);
+        assertEquals(1968L, year);
+
+        String pug = toml.getString("animal/type/name").orElse(null);
+        assertEquals("pug", pug);
 
     }
 

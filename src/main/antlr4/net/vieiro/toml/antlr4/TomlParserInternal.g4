@@ -63,11 +63,6 @@ table : standard_table | array_table ;
 
 standard_table : L_BRACKET key R_BRACKET ;
 
-inline_table : L_BRACE inline_table_keyvals R_BRACE ;
-
-inline_table_keyvals : inline_table_keyvals_non_empty? ;
-
-inline_table_keyvals_non_empty : key EQUALS value (COMMA inline_table_keyvals_non_empty)? ;
-
 array_table : DOUBLE_L_BRACKET key DOUBLE_R_BRACKET ;
 
+inline_table : L_BRACE key EQUALS value (COMMA key EQUALS value)? COMMA? R_BRACE ;

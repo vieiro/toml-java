@@ -2,6 +2,8 @@
 
 A simple parser for TOML files, with minimum dependencies (just Antlr4 runtime).
 
+> NOTE: This is still alpha-quality software.
+
 ## Goals
 
 - To conform to the TOML specification as much as possible.
@@ -30,7 +32,7 @@ The java object tree for the TOML document is created with the following Java ty
 ```java
 
 // Parse an InputStream
-TOML toml = TOMLParser.parseFromInputStream(input, StandardCharsets.UTF_8);
+TOML toml = TOMLParser.parseFromInputStream(input);
 
 // Obtain the parsed object
 Map<Object, Object> parsed = toml.getRoot();

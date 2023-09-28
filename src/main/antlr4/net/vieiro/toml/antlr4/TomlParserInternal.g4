@@ -52,7 +52,9 @@ bool_ : BOOLEAN ;
 
 date_time : OFFSET_DATE_TIME | LOCAL_DATE_TIME | LOCAL_DATE | LOCAL_TIME ;
 
-inline_table : L_BRACE key EQUALS inline_value (COMMA key EQUALS inline_value)*? COMMA? R_BRACE ;
+inline_table : 
+    L_BRACE key EQUALS inline_value (COMMA key EQUALS inline_value)*? COMMA? R_BRACE 
+    | L_BRACE R_BRACE;
 
 inner_array: L_BRACKET inline_value? (COMMA inline_value)*? COMMA*? R_BRACKET;
 
@@ -60,10 +62,9 @@ inline_value: string | integer | floating_point | bool_ | date_time | inner_arra
 
 array_ : L_BRACKET array_values? comment_or_nl R_BRACKET ;
 
-array_values : (comment_or_nl value nl_or_comment COMMA array_values comment_or_nl) | comment_or_nl value nl_or_comment COMMA? ;
+array_values : (comment_or_nl value comment_or_nl COMMA comment_or_nl array_values comment_or_nl) | comment_or_nl value COMMA? ;
 
 comment_or_nl : (COMMENT? NL)* ;
-nl_or_comment : (NL COMMENT?)* ;
 
 table : standard_table | array_table ;
 

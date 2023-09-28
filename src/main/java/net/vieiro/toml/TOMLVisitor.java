@@ -15,10 +15,10 @@
  */
 package net.vieiro.toml;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean bln, BitSet bitset, ATNConfigSet atncs) {
+    public void reportAmbiguity​(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact, BitSet ambigAlts, ATNConfigSet configs) {
         // Empty
     }
 
@@ -118,6 +118,9 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         } else if (ctx.comment() != null) {
             return null;
         }
+        if (ctx.exception != null) {
+            throw ctx.exception;
+        }
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -135,8 +138,9 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             List<Object> keys = (List<Object>) key;
             HashMap<Object, Object> newTable = createNestedTables(currentTable, keys, true);
             newTable.put(keys.get(keys.size() - 1), value);
+        } else {
+            currentTable.put(key, value);
         }
-        currentTable.put(key, value);
         return key;
     }
 
@@ -176,10 +180,12 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             String BASIC_STRING = ctx.BASIC_STRING().getText();
             // Remove quotes
             BASIC_STRING = BASIC_STRING.substring(1, BASIC_STRING.length() - 1);
-            return BASIC_STRING.trim();
+            return unescapeTOMLString(BASIC_STRING);
         } else if (ctx.LITERAL_STRING() != null) {
             String LITERAL_STRING = ctx.LITERAL_STRING().getText();
-            return LITERAL_STRING.trim();
+            // Remove quotes
+            LITERAL_STRING = LITERAL_STRING.substring(1, LITERAL_STRING.length() - 1);
+            return LITERAL_STRING;
         }
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -211,27 +217,168 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     static final Pattern LINE_ENDING_BACKSLASH = Pattern.compile("\\\\\r?\\n[\\s]*");
 
+    /**
+     * Adapted from https://gist.github.com/uklimaschewski/6741769 Unescapes a
+     * string that contains standard Java escape sequences.
+     * <ul>
+     * <li><strong>&#92;b &#92;f &#92;n &#92;r &#92;t &#92;" &#92;'</strong> :
+     * BS, FF, NL, CR, TAB, double and single quote.</li>
+     * <li><strong>&#92;X &#92;XX &#92;XXX</strong> : Octal character
+     * specification (0 - 377, 0x00 - 0xFF).</li>
+     * <li><strong>&#92;uXXXX or &#92;uXXXXXXXX</strong> : Hexadecimal based
+     * Unicode character.</li>
+     * </ul>
+     *
+     * @param st A string optionally containing standard java escape sequences.
+     * @return The translated string.
+     */
+    public String unescapeTOMLString(String st) {
+        // Fail fast if not escaped
+        if (st.indexOf('\\') == -1) {
+            return st;
+        }
+
+        StringBuilder sb = new StringBuilder(st.length());
+
+        for (int i = 0; i < st.length(); i++) {
+            char ch = st.charAt(i);
+            if (ch == '\\') {
+                char nextChar = (i == st.length() - 1) ? '\\' : st
+                        .charAt(i + 1);
+                // Octal escape?
+                if (nextChar >= '0' && nextChar <= '7') {
+                    String code = "" + nextChar;
+                    i++;
+                    if ((i < st.length() - 1) && st.charAt(i + 1) >= '0'
+                            && st.charAt(i + 1) <= '7') {
+                        code += st.charAt(i + 1);
+                        i++;
+                        if ((i < st.length() - 1) && st.charAt(i + 1) >= '0'
+                                && st.charAt(i + 1) <= '7') {
+                            code += st.charAt(i + 1);
+                            i++;
+                        }
+                    }
+                    sb.append((char) Integer.parseInt(code, 8));
+                    continue;
+                }
+                // Line ending backslash
+                /* "When the last non-whitespace character on a line is an 
+                unescaped \, it will be trimmed along with all whitespace 
+                (including newlines) up to the next non-whitespace 
+                character or closing delimiter"
+
+                This is tricky, because "\\n" complies, but "\   \n" complies too.
+                 */
+                if (Character.isWhitespace(nextChar)) {
+                    boolean newLineFound = nextChar == '\n';
+                    // line ending backslash
+                    int newi = i + 1;
+                    for (int j = i + 2; j < st.length(); j++) {
+                        int c = st.charAt(j);
+                        if (Character.isWhitespace(c)) {
+                            newLineFound = newLineFound || c == '\n';
+                            newi = j;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (newLineFound) {
+                        i = newi;
+                        continue;
+                    }
+                }
+                switch (nextChar) {
+                    case '\\':
+                        ch = '\\';
+                        break;
+                    case '\n':
+                    case '\r':
+                        continue;
+                    case 'b':
+                        ch = '\b';
+                        break;
+                    case 'f':
+                        ch = '\f';
+                        break;
+                    case 'n':
+                        ch = '\n';
+                        break;
+                    case 'r':
+                        ch = '\r';
+                        break;
+                    case 't':
+                        ch = '\t';
+                        break;
+                    case '\"':
+                        ch = '\"';
+                        break;
+                    case '\'':
+                        ch = '\'';
+                        break;
+                    // Hex Unicode: u????
+                    case 'u': {
+                        if (i >= st.length() - 5) {
+                            ch = 'u';
+                            break;
+                        }
+                        int code = Integer.parseInt(
+                                "" + st.charAt(i + 2) + st.charAt(i + 3)
+                                + st.charAt(i + 4) + st.charAt(i + 5), 16);
+                        sb.append(Character.toChars(code));
+                        i += 5;
+                        continue;
+                    }
+                    // Hex Unicode: U????????
+                    case 'U': {
+                        if (i >= st.length() - 9) {
+                            ch = 'U';
+                            break;
+                        }
+                        int code = Integer.parseInt(
+                                "" + st.charAt(i + 2) + st.charAt(i + 3)
+                                + st.charAt(i + 4) + st.charAt(i + 5)
+                                + st.charAt(i + 6) + st.charAt(i + 7)
+                                + st.charAt(i + 8) + st.charAt(i + 9),
+                                16);
+                        sb.append(Character.toChars(code));
+                        i += 9;
+                        continue;
+                    }
+                }
+                i++;
+            }
+            sb.append(ch);
+        }
+        return sb.toString();
+    }
+
     @Override
     public Object visitString(TomlParserInternal.StringContext ctx) {
         if (ctx.BASIC_STRING() != null) {
             String basicString = ctx.BASIC_STRING().getText();
             // Remove quotes from basicString
-            return basicString.substring(1, basicString.length() - 1);
+            basicString = basicString.substring(1, basicString.length() - 1);
+            return unescapeTOMLString(basicString);
         } else if (ctx.ML_BASIC_STRING() != null) {
-            String mlBasicString = ctx.ML_BASIC_STRING().getText();
-            mlBasicString = mlBasicString.substring(3, mlBasicString.length() - 3);
-            mlBasicString = LINE_ENDING_BACKSLASH.matcher(mlBasicString).replaceAll("");
-            mlBasicString = mlBasicString.replaceAll("^\r?\n", "");
-            return mlBasicString;
+            String ML_BASIC_STRING = ctx.ML_BASIC_STRING().getText();
+            ML_BASIC_STRING = ML_BASIC_STRING.substring(3, ML_BASIC_STRING.length() - 3);
+            ML_BASIC_STRING = unescapeTOMLString(ML_BASIC_STRING);
+            // ML_BASIC_STRING = LINE_ENDING_BACKSLASH.matcher(ML_BASIC_STRING).replaceAll("");
+            // TODO: Review this.
+            ML_BASIC_STRING = ML_BASIC_STRING.replaceAll("^\r?\n", "");
+            return ML_BASIC_STRING;
         } else if (ctx.LITERAL_STRING() != null) {
             String LITERAL_STRING = ctx.LITERAL_STRING().getText();
             // Remove single quotes
             LITERAL_STRING = LITERAL_STRING.substring(1, LITERAL_STRING.length() - 1);
+            LITERAL_STRING = LITERAL_STRING.replaceAll("^\r?\n", "");
             return LITERAL_STRING;
         } else if (ctx.ML_LITERAL_STRING() != null) {
             String ML_LITERAL_STRING = ctx.ML_LITERAL_STRING().getText();
             // Remove ''' at start & end
             ML_LITERAL_STRING = ML_LITERAL_STRING.substring(3, ML_LITERAL_STRING.length() - 3);
+            ML_LITERAL_STRING = ML_LITERAL_STRING.replaceAll("^\r?\n", "");
             return ML_LITERAL_STRING;
         }
         throw new UnsupportedOperationException("Not supported yet.");
@@ -279,19 +426,25 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
         return Boolean.valueOf(BOOLEAN);
     }
 
+    private static final DateTimeFormatter DATETIME_WITH_SPACES = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     @Override
     public Object visitDate_time(TomlParserInternal.Date_timeContext ctx) {
         if (ctx.OFFSET_DATE_TIME() != null) {
             String OFFSET_DATE_TIME = ctx.OFFSET_DATE_TIME().getText();
             OFFSET_DATE_TIME = OFFSET_DATE_TIME.replace(" ", "T");
             try {
-                return Instant.parse(OFFSET_DATE_TIME);
+                return OffsetDateTime.parse(OFFSET_DATE_TIME);
             } catch (DateTimeParseException dtpe) {
-                return Instant.from(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(OFFSET_DATE_TIME));
+                return OffsetDateTime.from(DateTimeFormatter.ISO_ZONED_DATE_TIME.parse(OFFSET_DATE_TIME));
             }
         } else if (ctx.LOCAL_DATE_TIME() != null) {
             String LOCAL_DATE_TIME = ctx.LOCAL_DATE_TIME().getText();
-            return LocalDateTime.parse(LOCAL_DATE_TIME);
+            try {
+                return LocalDateTime.parse(LOCAL_DATE_TIME);
+            } catch (DateTimeParseException dtpe) {
+                return LocalDateTime.from(DATETIME_WITH_SPACES.parse(LOCAL_DATE_TIME));
+            }
         } else if (ctx.LOCAL_DATE() != null) {
             String LOCAL_DATE = ctx.LOCAL_DATE().getText();
             return LocalDate.parse(LOCAL_DATE);
@@ -327,11 +480,6 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @Override
     public Object visitComment_or_nl(TomlParserInternal.Comment_or_nlContext ctx) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Object visitNl_or_comment(TomlParserInternal.Nl_or_commentContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -522,7 +670,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
             return ctx.bool_().accept(this);
         } else if (ctx.date_time() != null) {
             return ctx.date_time().accept(this);
-        } else if (ctx.inner_array()!= null) {
+        } else if (ctx.inner_array() != null) {
             return ctx.inner_array().accept(this);
         } else if (ctx.inline_table() != null) {
             return ctx.inline_table().accept(this);

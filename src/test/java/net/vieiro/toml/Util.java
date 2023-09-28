@@ -18,16 +18,19 @@ package net.vieiro.toml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test utilities
  */
-public final class TestUtil {
+public final class Util {
 
     public static TOML parse(String resource, boolean verbose) throws IOException {
-        try (InputStream input = TestUtil.class.getResourceAsStream(resource)) {
-            System.out.format("  - Reading test file '%s'%n", resource);
+        try (InputStream input = Util.class.getResourceAsStream(resource)) {
+            if (verbose) {
+                System.out.format("  - Reading test file '%s'%n", resource);
+            }
             assertNotNull(input, "Missing test resource '" + resource + "'");
             TOML toml = TOMLParser.parseFromInputStream(input);
             List<String> errors = toml.getErrors();
@@ -35,13 +38,13 @@ public final class TestUtil {
             if (verbose) {
                 System.out.format("Parsed %s%n", resource);
                 System.out.format("%s%n", toml.root);
+
+                for (String error : errors) {
+                    System.out.format("SYNTAX ERROR: %s %s%n", resource, error);
+                }
             }
-            
-            for (String error : errors) {
-                System.err.format("ERROR: %s%n", error);
-            }
-            System.err.flush();
-            assertTrue(errors.isEmpty(), String.format("Test %s has %d errors.", resource, errors.size()));
+            System.out.flush();
+            assertEquals(0, errors.size(), String.format("Test %s has %d syntax errors (%s).", resource, errors.size(), errors.stream().collect(Collectors.joining(",\n"))));
 
             return toml;
         }

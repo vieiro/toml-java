@@ -19,7 +19,7 @@ The java object tree for the TOML document is created with the following Java ty
 | Boolean   | Boolean   |
 | Float     | Double (with PositiveInfinity, NegativeInfinity or NaN) |
 | String    | String    |
-| Offset date-time | Instant |
+| Offset date-time | OffsetDateTime |
 | Local date-time | LocalDateTime |
 | Local date | LocalDate |
 | Local time | LocalTime |

@@ -45,7 +45,6 @@ LITERAL_STRING : '\'' (~['\n])*? '\'' ;
 // keys
 UNQUOTED_KEY : (ALPHA | DIGIT | '-' | '_')+ ;
 
-
 mode SIMPLE_VALUE_MODE;
 
 VALUE_WS: WS -> skip ;
@@ -59,9 +58,9 @@ BOOLEAN : ('true' | 'false') -> popMode ;
 // strings
 fragment ML_SPECIAL : '\\' '\r'? '\n' | ESC | '""' | '"' | '\\';
 VALUE_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING), popMode ;
-ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' -> popMode ;
+ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' ('"')* {_input.LA(1) != '"' }? -> popMode ;
 VALUE_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING), popMode ;
-ML_LITERAL_STRING : '\'\'\'' (.)*? '\'\'\'' -> popMode ;
+ML_LITERAL_STRING : '\'\'\'' (.)*? '\'\'\'' ('\'')* { _input.LA(1) != '\'' }? -> popMode ;
 
 // floating point numbers
 fragment EXP : ('e' | 'E') [+-]? ZERO_PREFIXABLE_INT ;
@@ -91,7 +90,7 @@ fragment MINUTE : DIGIT DIGIT ;
 fragment SECOND : DIGIT DIGIT ;
 fragment SECFRAC : '.' DIGIT+ ;
 fragment NUMOFFSET : ('+' | '-') HOUR ':' MINUTE ;
-fragment OFFSET : 'Z' | NUMOFFSET ;
+fragment OFFSET : 'Z' | 'z' | NUMOFFSET ;
 fragment PARTIAL_TIME : HOUR ':' MINUTE ':' SECOND SECFRAC? ;
 fragment FULL_DATE : YEAR '-' MONTH '-' DAY ;
 fragment FULL_TIME : PARTIAL_TIME OFFSET ;

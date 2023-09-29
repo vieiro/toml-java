@@ -1,3 +1,10 @@
+[fruit]
+apple.color = "red"
+
+[[fruit.apple.seeds]]
+size = 2
+
+
 [[products]]
 name = "Hammer"
 sku = 738594937
@@ -29,3 +36,4 @@ name = "banana"
 
 [[fruits.varieties]]
 name = "plantain"
+

@@ -15,10 +15,13 @@
  */
 package net.vieiro.toml;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -153,6 +156,16 @@ public final class TOML {
     }
 
     /**
+     * Retrieves a OffsetDateTime value from this TOML object.
+     *
+     * @param path The path, separated by forward slashes, as in "a/b/c"
+     * @return The OffsetDateTime value, if any, or Optional.empty() otherwise.
+     */
+     public Optional<OffsetDateTime> getOffsetDateTime(String path) {
+        return get(path, OffsetDateTime.class);
+    }
+
+    /**
      * Retrieves a LocalDateTime value from this TOML object.
      *
      * @param path The path, separated by forward slashes, as in "a/b/c"
@@ -212,6 +225,15 @@ public final class TOML {
             return Optional.of(tables);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Utility method to write a JSON representation of the Java object tree.
+     * @param out The Writer where the JSON representation is expected.
+     * @throws IOException If an I/O error happens.
+     */
+    public void writeJSON(Writer out) throws IOException {
+        TOMLJSON.write(root, out);
     }
 
 }

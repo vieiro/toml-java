@@ -16,6 +16,8 @@
 package net.vieiro.toml;
 
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -62,8 +64,8 @@ public final class TOML {
     }
 
     /**
-     * Prints out the object tree.
-     * For debugging purposes.
+     * Prints out the object tree. For debugging purposes.
+     *
      * @return A String representation of the object tree.
      */
     @Override
@@ -73,26 +75,7 @@ public final class TOML {
 
     @SuppressWarnings("unchecked")
     private <T> Optional<T> get(String path, Class<T> clazz) {
-        String[] parts = path.split("/");
-        Map<Object, Object> map = root;
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
-            if (!map.containsKey(part)) {
-                return Optional.empty();
-            }
-            Object o = map.get(part);
-            if (i < parts.length - 1) {
-                if (!(o instanceof Map)) {
-                    return Optional.empty();
-                }
-                map = (Map) o;
-            } else {
-                if (clazz.isAssignableFrom(o.getClass())) {
-                    return Optional.of((T) o);
-                }
-            }
-        }
-        return Optional.empty();
+        return TOMLSimpleQuery.get(root, path, clazz);
     }
 
     /**
@@ -161,7 +144,7 @@ public final class TOML {
      * @param path The path, separated by forward slashes, as in "a/b/c"
      * @return The OffsetDateTime value, if any, or Optional.empty() otherwise.
      */
-     public Optional<OffsetDateTime> getOffsetDateTime(String path) {
+    public Optional<OffsetDateTime> getOffsetDateTime(String path) {
         return get(path, OffsetDateTime.class);
     }
 
@@ -229,11 +212,29 @@ public final class TOML {
 
     /**
      * Utility method to write a JSON representation of the Java object tree.
+     *
      * @param out The Writer where the JSON representation is expected.
      * @throws IOException If an I/O error happens.
      */
     public void writeJSON(Writer out) throws IOException {
-        TOMLJSON.write(root, out);
+        TOMLJSON.write(root, out, false);
+    }
+
+    /**
+     * Utility method to write a JSON representation of the Java object tree.
+     *
+     * @param out The Writer where the JSON representation is expected.
+     * @throws IOException If an I/O error happens.
+     */
+    public void writeJSON(PrintStream out) throws IOException {
+        PrintWriter pw = new PrintWriter(out) {
+            @Override
+            public void close() {
+                // empty
+            }
+        };
+        writeJSON(pw);
+        pw.flush();
     }
 
 }

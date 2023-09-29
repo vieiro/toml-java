@@ -34,11 +34,24 @@ public class TOMLArrayTableTest {
         boolean verbose = false;
         TOML toml = Util.parse("array-of-tables-test.toml", verbose);
 
+        if (verbose) {
+            System.out.format("GRAPH: %s%n", toml.root);
+        }
+
         // Querying the TOML document using OGNL
         Object red = Ognl.getValue("fruits[0].physical.color", toml.root);
         assertEquals("red", red);
 
+        red = toml.getString("fruits/0/physical/color").orElse(null);
+        assertEquals("red", red);
+
         Object plantain = Ognl.getValue("fruits[1].varieties[0].name", toml.root);
+        assertEquals("plantain", plantain);
+
+        plantain = toml.getString("fruits/1/varieties/0/name").orElse(null);
+        assertEquals("plantain", plantain);
+
+        plantain = toml.getString("fruits/1/varieties/-1/name").orElse(null);
         assertEquals("plantain", plantain);
 
         if (verbose) {

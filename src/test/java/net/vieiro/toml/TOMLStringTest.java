@@ -65,14 +65,4 @@ public class TOMLStringTest {
 
     }
 
-//    @Test
-//    public void testShouldLineEndingBackslashMatch() {
-//        String multiline = "The quick brown \\\n"
-//                + "\n"
-//                + "\n"
-//                + "  fox jumps over \\\n"
-//                + "    the lazy dog.";
-//        String result = TOMLVisitor.LINE_ENDING_BACKSLASH.matcher(multiline).replaceAll("");
-//        assertEquals("The quick brown fox jumps over the lazy dog.", result);
-//    }
 }

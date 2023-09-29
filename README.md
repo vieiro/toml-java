@@ -1,23 +1,22 @@
 # toml-java
 
-A simple parser for TOML files, with minimum dependencies (just Antlr4 runtime).
-
-> NOTE: This is still alpha-quality software.
+A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
 ## Goals
 
 - To conform to the TOML specification as much as possible.
 - To return a Java object tree with no custom classes.
+- To have as little runtime dependencies as possible (currently only Antlr4 runtime is required).
 
 ## Type mapping
 
-The java object tree for the TOML document is created with the following Java types:
+The java object tree generated after parsing a TOML document is created with the following Java types:
 
 | TOML Type | Java Type |
 |-----------|-----------|
 | Integer   | Long      |
 | Boolean   | Boolean   |
-| Float     | Double (with PositiveInfinity, NegativeInfinity or NaN) |
+| Float     | Double (including PositiveInfinity, NegativeInfinity or NaN) |
 | String    | String    |
 | Offset date-time | OffsetDateTime |
 | Local date-time | LocalDateTime |
@@ -29,12 +28,25 @@ The java object tree for the TOML document is created with the following Java ty
 
 ## Basic usage
 
-```java
+This library has just two public classes:
 
+- `TOMLParser`, used to parse a TOML document.
+- `TOML`, the result of the parsing, that contains:
+    - The parsed java object tree `getRoot()`.
+    - The errors generated during parsing, if any `getErrors()`.
+    - Different query methods for analyging the generated object graph.
+    - Methods for dumping the java object graph to JSON.
+
+A basic parsing of a TOML document would be:
+
+```java
 // Parse an InputStream
 TOML toml = TOMLParser.parseFromInputStream(input);
 
-// Obtain the parsed object
+// No errors should be produced
+assert(toml.getErrors().isEmpty())
+
+// Obtain the parsed object tree
 Map<Object, Object> parsed = toml.getRoot();
 
 // Obtain the syntax errors, if any
@@ -44,31 +56,80 @@ List<String> errors = toml.getErrors();
 
 ## Querying
 
-The TOML result has some simple methods for querying the generated object tree:
+The TOML generated object tree can be queried using a very simple language: you
+specify a path separated with forward slashes, specifying either the name of a
+table or an integer when accessing an array.
+
+For instance, given the following TOML document:
+
+```toml
+[[fruits]]
+name = "apple"
+
+[fruits.physical]  # subtable
+color = "red"
+shape = "round"
+
+[[fruits.varieties]]  # nested array of tables
+name = "red delicious"
+
+[[fruits.varieties]]
+name = "granny smith"
+
+[[fruits]]
+name = "banana"
+
+[[fruits.varieties]]
+name = "plantain"
+
+```
+
+You can query it, once parsed, as follows:
 
 ```java
-
 // Parse an InputStream
-TOML toml = TOMLParser.parseFromInputStream(input, StandardCharsets.UTF_8);
+TOML toml = TOMLParser.parseFromInputStream(input);
 
-// Query for a property
-String name = toml.getString("workspace/project/name").orElse(null);
+// Returns "red"
+String red = toml.getString("fruits/0/physical/color").orElse(null);
+
+// Returns "plantain"
+String plantain = toml.getString("fruits/1/varieties/0/name").orElse(null);
+
+// Also returns "plantain", note the negative index
+String plantain_too = toml.getString("fruits/1/varieties/-1/name").orElse(null);
 ```
+
+You can use negative indexes (-1, -2) for accessing arrays from the end.
+
+See `TOML.java` for different query methods.
 
 ## Advanced querying
 
 You can use more advanced techniques and expression languages for querying the
 object tree. The unit tests have some examples for querying the object tree using
-OGNL.
+OGNL (but you could use JXPath, Spring SpEL, etc.).
 
 ## JSON Serialization
 
-The library does not contain JSON serialization per se. The unit tests have an
-example of using GSON for serializing/pretty-printing a complex object tree to JSON.
+You can dump a TOML parsing result into JSON without requiring extra dependencies:
 
-## Defensive programming
+```java
+// Parse an InputStream
+TOML toml = TOMLParser.parseFromString(
+    "[dog.\"tater.man\"]\n"
+    + "type.name = \"pug\"");
+toml.writeJSON(System.out);
+```
 
-The library throws exceptions in border cases. Please fill an issue if you find one of these,
-with an example TOML document to reproduce the problem.
+Produces:
+
+```
+{"dog":{"tater.man":{"type":{"name":"pug"}}}}
+```
+
+## Bugs
+
+Please file an issue if you find a TOML document that can't be parsed with this library.
 
 

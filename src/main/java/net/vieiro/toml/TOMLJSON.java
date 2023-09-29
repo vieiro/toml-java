@@ -17,10 +17,10 @@ package net.vieiro.toml;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Map;
 final class TOMLJSON {
 
     @SuppressWarnings("unchecked")
-    static void write(Object object, Writer out) throws IOException {
+    static void write(Object object, Writer out, boolean quotes) throws IOException {
         if (object == null) {
             out.write("null");
         } else if (object instanceof Map) {
@@ -40,7 +40,7 @@ final class TOMLJSON {
         } else if (object instanceof List) {
             writeList((List) object, out);
         } else {
-            writeLiteral(object, out);
+            writeLiteral(object, out, quotes);
         }
     }
 
@@ -50,12 +50,13 @@ final class TOMLJSON {
         int i = 0;
         int n = table.entrySet().size();
         for (Map.Entry<Object, Object> entry : table.entrySet()) {
-            write(entry.getKey(), out);
+            write(entry.getKey(), out, true);
             out.write(':');
-            write(entry.getValue(), out);
+            write(entry.getValue(), out, false);
             if (i < n - 1) {
                 out.write(',');
             }
+            i++;
         }
         out.write('}');
     }
@@ -65,7 +66,7 @@ final class TOMLJSON {
         out.write('[');
         int n = list.size();
         for (int i = 0; i < list.size(); i++) {
-            write(list.get(i), out);
+            write(list.get(i), out, false);
             if (i < n - 1) {
                 out.write(',');
             }
@@ -74,32 +75,68 @@ final class TOMLJSON {
     }
 
     @SuppressWarnings("unchecked")
-    private static void writeLiteral(Object o, Writer out) throws IOException {
+    private static void writeLiteral(Object o, Writer out, boolean quotes) throws IOException {
+        if (quotes) {
+            out.write('\"');
+        }
         if (o instanceof String) {
+            if (!quotes) {
+                out.write('\"');
+            }
             writeString((String) o, out);
+            if (!quotes) {
+                out.write('\"');
+            }
         } else if (o instanceof Long) {
-            out.write(Long.toString((Long)o));
+            out.write(Long.toString((Long) o));
         } else if (o instanceof Double) {
             Double d = (Double) o;
             if (Double.isNaN(d)) {
-                out.write("nan");
+                out.write("null");
             } else if (d.isInfinite()) {
-                out.write(d == Double.POSITIVE_INFINITY ? "inf" : "-inf");
+                out.write(d == Double.POSITIVE_INFINITY ? "null" : "null");
             } else {
                 out.write(Double.toString(d));
             }
         } else if (o instanceof Boolean) {
-            out.write(Boolean.toString((Boolean)o));
-        } else if (o instanceof Instant) {
-            out.write(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format((Instant)o));
+            out.write(Boolean.toString((Boolean) o));
+        } else if (o instanceof OffsetDateTime) {
+            if (!quotes) {
+                out.write('\"');
+            }
+            out.write(DateTimeFormatter.ISO_OFFSET_DATE_TIME.format((OffsetDateTime) o));
+            if (!quotes) {
+                out.write('\"');
+            }
         } else if (o instanceof LocalDateTime) {
-            out.write(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((LocalDateTime)o));
+            if (!quotes) {
+                out.write('\"');
+            }
+            out.write(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format((LocalDateTime) o));
+            if (!quotes) {
+                out.write('\"');
+            }
         } else if (o instanceof LocalDate) {
-            out.write(DateTimeFormatter.ISO_LOCAL_DATE.format((LocalDate)o));
+            if (!quotes) {
+                out.write('\"');
+            }
+            out.write(DateTimeFormatter.ISO_LOCAL_DATE.format((LocalDate) o));
+            if (!quotes) {
+                out.write('"');
+            }
         } else if (o instanceof LocalTime) {
-            out.write(DateTimeFormatter.ISO_LOCAL_TIME.format((LocalTime)o));
+            if (!quotes) {
+                out.write('"');
+            }
+            out.write(DateTimeFormatter.ISO_LOCAL_TIME.format((LocalTime) o));
+            if (!quotes) {
+                out.write('"');
+            }
         } else {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+        if (quotes) {
+            out.write('"');
         }
     }
 

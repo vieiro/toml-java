@@ -4,9 +4,9 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
 ## Goals
 
-- To conform to the TOML specification as much as possible.
-- To return a Java object tree with no custom classes.
-- To have as little runtime dependencies as possible (currently only Antlr4 runtime is required).
+1. To conform to the TOML specification as much as possible.
+1. To return a Java object tree with no custom classes.
+1. To have as little runtime dependencies as possible (currently only Antlr4 runtime is required).
 
 ## Type mapping
 

@@ -27,6 +27,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public final class Util {
 
     public static TOML parse(String resource, boolean verbose) throws IOException {
+        return parse(resource, verbose, false);
+    }
+
+    public static TOML parse(String resource, boolean verbose, boolean allowingErrors) throws IOException {
         try (InputStream input = Util.class.getResourceAsStream(resource)) {
             if (verbose) {
                 System.out.format("  - Reading test file '%s'%n", resource);
@@ -42,9 +46,12 @@ public final class Util {
                 for (String error : errors) {
                     System.out.format("SYNTAX ERROR: %s %s%n", resource, error);
                 }
+                System.out.flush();
             }
-            System.out.flush();
-            assertEquals(0, errors.size(), String.format("Test %s has %d syntax errors (%s).", resource, errors.size(), errors.stream().collect(Collectors.joining(",\n"))));
+
+            if (!allowingErrors) {
+                assertEquals(0, errors.size(), String.format("Test %s has %d syntax errors (%s).", resource, errors.size(), errors.stream().collect(Collectors.joining(",\n"))));
+            }
 
             return toml;
         }

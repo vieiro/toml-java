@@ -18,19 +18,36 @@ package net.vieiro.toml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.nio.charset.Charset;
+import java.nio.CharBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.vieiro.toml.antlr4.TomlLexerInternal;
 import net.vieiro.toml.antlr4.TomlParserInternal;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointBuffer;
+import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.IntStream;
+import org.antlr.v4.runtime.NoViableAltException;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 /**
  * Parsers TOML files.
  */
 public final class TOMLParser {
+
+    private static final Logger LOG = Logger.getLogger(TOMLParser.class.getName());
+
+    private static final int DEFAULT_BUFFER_SIZE = 4 * 4096;
 
     private TOMLParser() {
     }
@@ -50,23 +67,38 @@ public final class TOMLParser {
      * Parse a TOML document from a Reader.
      *
      * @param reader The Reader.
-     * @param filename The name of the file, used in error messages.
      * @return A TOML object with the result of parsing.
      * @throws IOException If an I/O error happens.
      */
-    public static TOML parseFromReader(Reader reader, String filename) throws IOException {
-        return parse(CharStreams.fromReader(reader, filename));
+    public static TOML parseFromReader(Reader reader) throws IOException {
+        return parseFromReader(reader, "Unknown source");
     }
 
     /**
      * Parse a TOML document from a Reader.
      *
      * @param reader The Reader.
+     * @param filename The name of the file, used in error messages.
      * @return A TOML object with the result of parsing.
      * @throws IOException If an I/O error happens.
      */
-    public static TOML parseFromReader(Reader reader) throws IOException {
-        return parse(CharStreams.fromReader(reader));
+    public static TOML parseFromReader(Reader reader, String filename) throws IOException {
+        try {
+            CodePointBuffer.Builder codePointBufferBuilder = CodePointBuffer.builder(DEFAULT_BUFFER_SIZE);
+            CharBuffer charBuffer = CharBuffer.allocate(DEFAULT_BUFFER_SIZE);
+            while ((reader.read(charBuffer)) != -1) {
+                charBuffer.flip();
+                codePointBufferBuilder.append(charBuffer);
+                charBuffer.compact();
+            }
+            CharStream stream = CodePointCharStream.fromBuffer(codePointBufferBuilder.build(), filename);
+            return parse(stream);
+        } catch (MalformedInputException mie) {
+            String error = String.format("Malformed UTF-8 detected on input %s", mie.getMessage());
+            return new TOML(Collections.emptyMap(), Arrays.asList(error));
+        } finally {
+            reader.close();
+        }
     }
 
     /**
@@ -81,14 +113,27 @@ public final class TOMLParser {
     }
 
     /**
-     * Parse a TOML document from an InputStream.
-     * Uses UTF-8 as the encoding.
+     * Parse a TOML document from an InputStream. Uses UTF-8 as the encoding.
+     *
      * @param input The InputStream.
      * @return A TOML object with the result of parsing.
      * @throws IOException If an I/O error happens.
      */
     public static TOML parseFromInputStream(InputStream input) throws IOException {
-        return parse(CharStreams.fromStream(input, StandardCharsets.UTF_8));
+        // We want "CodingErrorAction.REPORT" to detect invalid UTF-8
+        try (ReadableByteChannel channel = Channels.newChannel(input)) {
+            CharStream stream = CharStreams.fromChannel(
+                    channel,
+                    StandardCharsets.UTF_8,
+                    DEFAULT_BUFFER_SIZE,
+                    CodingErrorAction.REPORT,
+                    IntStream.UNKNOWN_SOURCE_NAME,
+                    -1);
+            return parse(stream);
+        } catch (MalformedInputException mie) {
+            String error = String.format("Malformed UTF-8 detected on input %s", mie.getMessage());
+            return new TOML(Collections.emptyMap(), Arrays.asList(error));
+        }
     }
 
     private static TOML parse(CharStream input) {
@@ -104,7 +149,22 @@ public final class TOMLParser {
         parser.removeErrorListeners();
         parser.addErrorListener(visitor);
 
-        parser.document().accept(visitor);
+        try {
+            parser.document().accept(visitor);
+        } catch (NoViableAltException nvae) {
+            visitor.getErrors().add("toml-java cannot parse this TOML documen. If you're sure this is a valid TOML document please file an issue in toml-java");
+            TOML toml = new TOML(Collections.emptyMap(), visitor.getErrors());
+            return toml;
+        } catch (ParseCancellationException pce) {
+            visitor.getErrors().add(pce.getMessage());
+            TOML toml = new TOML(Collections.emptyMap(), visitor.getErrors());
+            return toml;
+        } catch (Exception e) {
+            LOG.log(Level.SEVERE, e.getMessage() + "/" + e.getClass().getName(), e);
+            visitor.getErrors().add(String.format("Parsing stopped: %s", e.getMessage()));
+            TOML toml = new TOML(Collections.emptyMap(), visitor.getErrors());
+            return toml;
+        }
 
         return new TOML(visitor.getRoot(), visitor.getErrors());
     }

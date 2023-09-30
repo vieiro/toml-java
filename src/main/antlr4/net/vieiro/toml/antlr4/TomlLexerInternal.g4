@@ -21,9 +21,15 @@
 
 lexer grammar TomlLexerInternal;
 
+
 WS : [ \t]+ -> skip ;
 NL : ('\r'? '\n')+ ;
-COMMENT : '#' (~[\n])* ;
+// Comments do not allow control characters
+// https://github.com/toml-lang/toml/issues/567
+// Control characters other than tab (U+0000 to U+0008, U+000A to U+001F, U+007F) are not permitted in comments.
+fragment NON_CONTROL: ~('\u0000' .. '\u0008' | '\u000A' .. '\u001F' | '\u007F');
+COMMENT : '#' NON_CONTROL*;
+
 L_BRACKET : '[' ;
 DOUBLE_L_BRACKET : '[[' ;
 R_BRACKET : ']' ;
@@ -58,8 +64,10 @@ BOOLEAN : ('true' | 'false') -> popMode ;
 // strings
 fragment ML_SPECIAL : '\\' '\r'? '\n' | ESC | '""' | '"' | '\\';
 VALUE_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING), popMode ;
+// TODO: Add a proper submode for ML_BASIC_STRING that handles """ nicely
 ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' ('"')* {_input.LA(1) != '"' }? -> popMode ;
 VALUE_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING), popMode ;
+// TODO: Add a proper submode for ML_LITERAL_STRING that handles ''' nicely'
 ML_LITERAL_STRING : '\'\'\'' (.)*? '\'\'\'' ('\'')* { _input.LA(1) != '\'' }? -> popMode ;
 
 // floating point numbers

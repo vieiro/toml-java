@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.vieiro.toml;
+package net.vieiro.toml.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -29,7 +29,8 @@ import com.flipkart.zjsonpatch.JsonDiff;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.util.Objects;
+import net.vieiro.toml.TOML;
+import net.vieiro.toml.Util;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -225,18 +226,18 @@ public class TOMLJSONSerializationTest {
         "with-single-quotes.toml",
         "zero.toml",}
     )
-    public void testShouldSerializeToJSONProperly(String test) throws Exception {
-        System.out.format("testShouldSerializeToJSONProperly - %s%n", test);
+    public void testShouldSerializeToJSONProperly(String testName) throws Exception {
+        System.out.format("testShouldSerializeToJSONProperly - %s%n", testName);
 
         // Given an Object Mapper ...
         ObjectMapper mapper = getMapper();
 
         // And an expected JsonNode
         JsonNode expected = null;
-        String jsonResource = test.replace("toml", "json");
+        String jsonResource = testName.replace("toml", "json");
 
         try (InputStream jsonInput = TOMJSONDiffTest.class
-                .getResourceAsStream("json/" + jsonResource)) {
+                .getResourceAsStream(jsonResource)) {
             assertNotNull(jsonInput, String.format("Couldn't find test resource '%s'", jsonResource));
             // System.out.format( "  - Reading json file 'json/%s'%n", jsonResource);
             expected = mapper.readTree(jsonInput);
@@ -245,7 +246,7 @@ public class TOMLJSONSerializationTest {
 
         // When we parse the TOML document
         boolean verbose = false;
-        TOML toml = Util.parse("json/" + test, verbose);
+        TOML toml = Util.parse("json/" + testName, verbose);
 
         // and then generate a JSON String
         String jsonString = null;
@@ -253,7 +254,7 @@ public class TOMLJSONSerializationTest {
             toml.writeJSON(sw);
             jsonString = sw.toString();
         }
-        assertNotNull(jsonString, String.format("%s generated a null JSON", test));
+        assertNotNull(jsonString, String.format("%s generated a null JSON", testName));
 
         // Then the generated JsonNode
         JsonNode generated = null;
@@ -261,7 +262,7 @@ public class TOMLJSONSerializationTest {
             generated = mapper.readTree(jsonString);
         } catch (Exception e) {
             String message = String.format("GENERATED JSON for test %s IS MALFORMED (%s/%s): %n---%n%s%n---%n",
-                    test,
+                    testName,
                     e.getMessage(), e.getClass().getName(),
                     jsonString);
             fail(message);
@@ -282,7 +283,7 @@ public class TOMLJSONSerializationTest {
                     + "%nDIFF:%n"
                     + ""
                     + "%s",
-                    test,
+                    testName,
                     expected.toPrettyString(),
                     generated.toPrettyString(),
                     diff.toPrettyString());

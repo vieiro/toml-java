@@ -24,9 +24,9 @@ import java.util.Optional;
  * without requiring an advanced expression library (OGNL, JXPath, etc.)
  */
 final class TOMLSimpleQuery {
-
+    
     @SuppressWarnings("unchecked")
-    static <T> Optional<T> get(Map<Object, Object> root, String path, Class<T> clazz) {
+    static <T> Optional<T> get(Map<String, Object> root, String path, Class<T> clazz) {
         Optional<T> NOT_FOUND = Optional.empty();
         String[] parts = path.split("/");
         Object context = root;

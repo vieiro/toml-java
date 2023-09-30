@@ -53,7 +53,7 @@ bool_ : BOOLEAN ;
 date_time : OFFSET_DATE_TIME | LOCAL_DATE_TIME | LOCAL_DATE | LOCAL_TIME ;
 
 inline_table : 
-    L_BRACE key EQUALS inline_value (COMMA key EQUALS inline_value)*? COMMA? R_BRACE 
+    L_BRACE key EQUALS inline_value (COMMA key EQUALS inline_value)*? R_BRACE 
     | L_BRACE R_BRACE;
 
 inner_array: L_BRACKET inline_value? (COMMA inline_value)*? COMMA*? R_BRACKET;

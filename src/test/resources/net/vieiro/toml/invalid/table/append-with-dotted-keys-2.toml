@@ -1,0 +1,16 @@
+# This is the same issue as in injection-1.toml, except that nests one level
+# deeper. See that file for a more complete description.
+
+[a.b.c.d]
+  z = 9
+
+[a]
+  b.c.d.k.t = "Using dotted keys to add to [a.b.c.d] after explicitly defining it above is not allowed"
+
+comment= """
+Antonio/2023-10:
+Well, this is plain wrong, IMHO.
+
+The fact is that TOML2JSON https://transform.tools/toml-to-json
+considers this a valid document too.
+"""

@@ -11,3 +11,12 @@ key2 = 456
 
 [dog."tater.man"]
 type.name = "pug"
+
+[fruit.apple]
+x=43
+
+# This valid (contrary to "invallid-table.toml": we're redefining a table 
+# inside a previous standard table.
+[fruit] # <- fruit already exists and is a valid key
+apple.color = "red"
+apple.taste.sweet = true

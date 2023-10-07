@@ -37,10 +37,10 @@ import java.util.Optional;
  */
 public final class TOML {
 
-    final Map<Object, Object> root;
+    final Map<String, Object> root;
     final List<String> errors;
 
-    TOML(Map<Object, Object> root, List<String> errors) {
+    TOML(Map<String, Object> root, List<String> errors) {
         this.root = root;
         this.errors = Collections.unmodifiableList(errors);
     }
@@ -59,7 +59,7 @@ public final class TOML {
      *
      * @return The root table representing the parsed TOML document.
      */
-    public Map<Object, Object> getRoot() {
+    public Map<String, Object> getRoot() {
         return root;
     }
 

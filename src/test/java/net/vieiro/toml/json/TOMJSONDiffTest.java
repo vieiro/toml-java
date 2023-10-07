@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.vieiro.toml;
+package net.vieiro.toml.json;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -28,6 +28,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.flipkart.zjsonpatch.JsonDiff;
 import java.io.IOException;
 import java.io.InputStream;
+import net.vieiro.toml.TOML;
+import net.vieiro.toml.Util;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -71,23 +73,23 @@ public class TOMJSONDiffTest {
         return mapperInstance;
     }
 
-    private void performJSONTest(String resource) throws Exception {
+    private void performJSONTest(String testName) throws Exception {
         ObjectMapper objectMapper = getMapper();
 
         assertNotNull(objectMapper, "objectMapper not initialized");
         // Given an expected JsonNode
-        String jsonResource = resource.replace("toml", "json");
+        String jsonResource = testName.replace("toml", "json");
         JsonNode expected = null;
 
         try (InputStream jsonInput = TOMJSONDiffTest.class
-                .getResourceAsStream("json/" + jsonResource)) {
+                .getResourceAsStream(jsonResource)) {
             assertNotNull(jsonInput, String.format("Couldn't find test resource '%s'", jsonResource));
             // System.out.format( "  - Reading json file 'json/%s'%n", jsonResource);
             expected = objectMapper.readTree(jsonInput);
         }
         assertNotNull(expected);
         // ... and a TOMLParser generated JsonNode ...
-        TOML toml = Util.parse("json/" + resource, false);
+        TOML toml = Util.parse("json/" + testName, false);
         JsonNode result = objectMapper.valueToTree(toml.getRoot());
         // ... when we compare these two JSON nodes ...
         JsonNode diff = JsonDiff.asJson(expected, result);
@@ -104,7 +106,7 @@ public class TOMJSONDiffTest {
                     + "%nDIFF:%n"
                     + ""
                     + "%s",
-                    resource,
+                    testName,
                     expected.toPrettyString(),
                     result.toPrettyString(),
                     diff.toPrettyString());

@@ -15,9 +15,6 @@
  */
 package net.vieiro.toml;
 
-import java.util.List;
-import java.util.Map;
-import ognl.Ognl;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
@@ -31,6 +28,8 @@ public class TOMLInlineTablesTest {
     public void testShouldParseInlineTablesProperly() throws Exception {
         System.out.println("testShouldParseInlineTablesProperly");
         TOML toml = Util.parse("inline-table-test.toml", false);
+
+        System.out.format("%n%s%n", toml.getRoot());
 
         String mustang = toml.getString("nested/details/model").orElse(null);
         assertEquals("Mustang", mustang);

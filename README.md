@@ -2,6 +2,8 @@
 
 A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
+[![Javadoc](https://img.shields.io/badge/JavaDoc-Online-green)](https://vieiro.github.io/toml-java/javadoc/)
+
 ## Goals
 
 1. To conform to the TOML specification as much as possible.
@@ -53,6 +55,10 @@ Map<Object, Object> parsed = toml.getRoot();
 List<String> errors = toml.getErrors();
 
 ```
+
+### Javadoc API
+
+See [the Javadoc for this project](https://vieiro.github.io/toml-java/javadoc/) for more details.
 
 ## Querying
 

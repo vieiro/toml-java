@@ -25,8 +25,8 @@ The java object tree generated after parsing a TOML document is created with the
 | Local date | LocalDate |
 | Local time | LocalTime |
 | Array | List&lt;Object&gt; |
-| Table | Map&lt;Object, Object&gt; |
-| Array of Tables | List&lt;Map&lt;Object, Object&gt;&gt; |
+| Table | Map&lt;String, Object&gt; |
+| Array of Tables | List&lt;Map&lt;String, Object&gt;&gt; |
 
 ## Basic usage
 

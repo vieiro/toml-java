@@ -1,0 +1,16 @@
+toml-java
+Copyright 2023 Antonio Vieiro <antonio@vieiro.net>
+
+This products requires the Antlr4 runtime binaries. Antlr4 is released under the
+BSD license. See https://www.antlr.org/license.html for details.
+
+toml-java is being tested with lots of great third-party libraries, including:
+- JUnit5 https://junit.org/junit5/
+- toml-test https://github.com/toml-lang/toml-test
+- FasterXML/jackson https://github.com/FasterXML/jackson
+- zjsonpatch https://github.com/flipkart-incubator/zjsonpatch
+- Google GSON https://github.com/google/gson
+- Object Graph Navigation Language https://github.com/orphan-oss/ognl
+- Different Maven plugins from the Apache Software Foundation and Sonatype.
+
+Thanks all for maintaining this software.

@@ -51,26 +51,56 @@ import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 /**
- *
+ * TOMLVisitor is responsible for visiting the parsed TOML nodes and, while doing it,
+ * building a Java object-tree representation of the TOML document.
  */
-public class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor<Object> {
+final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor<Object> {
 
+    /**
+     * Set to Level.INFO for debugging.
+     */
     private static final Level LEVEL = Level.FINE;
 
     private static final Logger LOG = Logger.getLogger(TOMLVisitor.class.getName());
 
+    /**
+     * A set of List&lt;String&gt; used as keys in standard table keys and table arrays.
+     * This is required because TOML specification is fuzzy about the posibility of
+     * dotted keys to change pre-existing standard table contents. See comments below
+     * for details.
+     */
     private HashSet<List<String>> standardTableKeys;
 
+    /**
+     * The list of syntax errors (either due to lexer or parser).
+     */
     private List<String> errors;
+    /**
+     * The Java object-tree of the generated document.
+     */
     private Map<String, Object> root;
+    /**
+     * A stack of possibly nested arrays.
+     */
     private Stack<List<Object>> arrayStack;
+    /**
+     * The current table where key-value pairs are added to.
+     * This changes during the parsing of the TOML document, as we encounter
+     * standard or array tables.
+     */
     private Map<String, Object> currentTable;
 
-    public TOMLVisitor() {
+    TOMLVisitor() {
         errors = new ArrayList<>();
         reset();
     }
 
+    /**
+     * Invoked at the beginning of parsing a document.
+     * This is a safety measure, TOMLVisitor should NOT be reused
+     * in different parser runs. Each parser run should have a brand
+     * new TOMLVisitor.
+     */
     private void reset() {
         root = new HashMap<>();
         arrayStack = new Stack<>();
@@ -78,10 +108,18 @@ public class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisito
         standardTableKeys = new HashSet<>();
     }
 
+    /**
+     * Getter for errors.
+     * @return The list of errors, or an empty array.
+     */
     public List<String> getErrors() {
         return errors;
     }
 
+    /**
+     * Getter for model.
+     * @return the java object tree representing the document.
+     */
     public Map<String, Object> getRoot() {
         return root;
     }
@@ -111,6 +149,11 @@ public class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisito
 
     //----------------------------------------------------------------------
     // TomlParserInternalVisitor
+    //
+    // Note that there're UnsupportedOperationExceptions below, these will fire
+    // if one changes the Antlr4 lexexr/parser and does not implement the
+    // proper methods.  These are kept for defensive-programming purposes.
+    //
     @Override
     public Object visitDocument(TomlParserInternal.DocumentContext ctx) {
         reset();

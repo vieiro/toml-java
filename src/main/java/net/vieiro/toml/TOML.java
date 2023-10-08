@@ -185,10 +185,10 @@ public final class TOML {
      * @return The Map stored in the given path, or Optional.empty() otherwise.
      */
     @SuppressWarnings("unchecked")
-    public Optional<Map<Object, Object>> getTable(String path) {
+    public Optional<Map<String, Object>> getTable(String path) {
         Optional<Map> map = get(path, Map.class);
         if (map.isPresent()) {
-            Map<Object, Object> mapOO = (Map<Object, Object>) map.get();
+            Map<String, Object> mapOO = (Map<String, Object>) map.get();
             return Optional.of(mapOO);
         }
         return Optional.empty();
@@ -201,10 +201,10 @@ public final class TOML {
      * @return The List of tables, if any, or Optional.empty() otherwise.
      */
     @SuppressWarnings("unchecked")
-    public Optional<List<Map<Object, Object>>> getTableArray(String path) {
+    public Optional<List<Map<String, Object>>> getTableArray(String path) {
         Optional<List> list = getArray(path);
         if (list.isPresent()) {
-            List<Map<Object, Object>> tables = (List<Map<Object, Object>>) list.get();
+            List<Map<String, Object>> tables = (List<Map<String, Object>>) list.get();
             return Optional.of(tables);
         }
         return Optional.empty();

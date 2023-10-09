@@ -10,23 +10,19 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 1. To return a Java object tree with no custom classes.
 1. To have as little runtime dependencies as possible (currently only Antlr4 runtime is required).
 
-## Type mapping
+## Maven & Gradle coordinates
 
-The java object tree generated after parsing a TOML document is created with the following Java types:
+```xml
+<dependency>
+    <groupId>net.vieiro</groupId>
+    <artifactId>toml-java</artifactId>
+    <version>1.1.1</version>
+</dependency>
+```
 
-| TOML Type | Java Type |
-|-----------|-----------|
-| Integer   | Long      |
-| Boolean   | Boolean   |
-| Float     | Double (including PositiveInfinity, NegativeInfinity or NaN) |
-| String    | String    |
-| Offset date-time | OffsetDateTime |
-| Local date-time | LocalDateTime |
-| Local date | LocalDate |
-| Local time | LocalTime |
-| Array | List&lt;Object&gt; |
-| Table | Map&lt;String, Object&gt; |
-| Array of Tables | List&lt;Map&lt;String, Object&gt;&gt; |
+```
+implementation 'net.vieiro:toml-java:1.1.1'
+```
 
 ## Basic usage
 
@@ -46,15 +42,34 @@ A basic parsing of a TOML document would be:
 TOML toml = TOMLParser.parseFromInputStream(input);
 
 // No errors should be produced
-assert(toml.getErrors().isEmpty())
+assert(toml.getErrors().isEmpty());
 
 // Obtain the parsed object tree
-Map<Object, Object> parsed = toml.getRoot();
+Map<String, Object> parsed = toml.getRoot();
 
-// Obtain the syntax errors, if any
-List<String> errors = toml.getErrors();
+// Or query the parsed object tree
+String red = toml.getString("fruits/0/physical/color").orElse(null);
 
 ```
+
+
+## Type mapping
+
+The java object tree generated after parsing a TOML document is created with the following Java types:
+
+| TOML Type | Java Type |
+|-----------|-----------|
+| Integer   | Long      |
+| Boolean   | Boolean   |
+| Float     | Double (including PositiveInfinity, NegativeInfinity or NaN) |
+| String    | String    |
+| Offset date-time | OffsetDateTime |
+| Local date-time | LocalDateTime |
+| Local date | LocalDate |
+| Local time | LocalTime |
+| Array | List&lt;Object&gt; |
+| Table | Map&lt;String, Object&gt; |
+| Array of Tables | List&lt;Map&lt;String, Object&gt;&gt; |
 
 ### Javadoc API
 

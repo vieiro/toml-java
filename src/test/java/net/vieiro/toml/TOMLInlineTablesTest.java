@@ -29,8 +29,6 @@ public class TOMLInlineTablesTest {
         System.out.println("testShouldParseInlineTablesProperly");
         TOML toml = Util.parse("inline-table-test.toml", false);
 
-        System.out.format("%n%s%n", toml.getRoot());
-
         String mustang = toml.getString("nested/details/model").orElse(null);
         assertEquals("Mustang", mustang);
 

@@ -52,15 +52,8 @@
     </developers>
 
     <profiles>
-        <!-- GPG Signature on release -->
         <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
+            <id>release-signing</id>
             <build>
                 <plugins>
                     <plugin>
@@ -167,14 +160,13 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>3.0.1</version>
                 <configuration>
-                    <arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
                     <goals>deploy</goals>
+                    <arguments>-Dgpg.passphrase=${gpg.passphrase}</arguments>
                     <localCheckout>true</localCheckout>
                     <mavenExecutorId>forked-path</mavenExecutorId>
                     <pushChanges>false</pushChanges>
-                    <releaseProfiles>release</releaseProfiles>
-                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release-signing</releaseProfiles>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
                 </configuration>
                 <dependencies>
                     <dependency>

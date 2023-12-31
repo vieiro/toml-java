@@ -12,16 +12,18 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
 ## Maven & Gradle coordinates
 
+### Dependency on Antlr 4.11.1
+
 ```xml
 <dependency>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.11</version>
 </dependency>
 ```
 
 ```
-implementation 'net.vieiro:toml-java:1.1.1'
+implementation 'net.vieiro:toml-java:1.1.11'
 ```
 
 ## Basic usage

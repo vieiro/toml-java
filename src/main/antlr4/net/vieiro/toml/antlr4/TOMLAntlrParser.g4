@@ -19,8 +19,8 @@
 
 // From https://github.com/antlr/grammars-v4/blob/master/toml/TomlParser.g4 (APLv2)
 
-parser grammar TomlParserInternal;
-options { tokenVocab = TomlLexerInternal; }
+parser grammar TOMLAntlrParser;
+options { tokenVocab = TOMLAntlrLexer; }
 
 document : expression (NL expression)* EOF ;
 

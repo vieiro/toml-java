@@ -7,28 +7,28 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 ## Goals
 
 1. To conform to the TOML specification as much as possible.
-1. To return a Java object tree with no custom classes.
+1. To return a Java object tree/subtree with no custom classes.
 1. To have as little runtime dependencies as possible (currently only Antlr4 runtime is required).
 
 ## Maven & Gradle coordinates
 
-### Dependency on Antlr 4.11.1
+### Dependency on Antlr 4.13.1
 
 ```xml
 <dependency>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>1.1.11</version>
+    <version>2.13.1</version>
 </dependency>
 ```
 
 ```
-implementation 'net.vieiro:toml-java:1.1.11'
+implementation 'net.vieiro:toml-java:2.13.1'
 ```
 
 ## Basic usage
 
-This library has just two public classes:
+This main API of this library has just two public classes:
 
 - `TOMLParser`, used to parse a TOML document.
 - `TOML`, the result of the parsing, that contains:
@@ -54,10 +54,44 @@ String red = toml.getString("fruits/0/physical/color").orElse(null);
 
 ```
 
+### Subtree queries
+
+In order to parse complex TOML documents, one can retrieve a subtree and query it. For instance, given the following TOML document:
+
+```toml
+[package]
+name = "parquet"
+version = {workspace = true}
+
+[dependencies]
+arrow-array = {worskpace = true, optional = true}
+
+```
+
+You could query it using either the TOML "root" object or use a subtree TOML object, like so:
+
+```java
+// Parse the document
+TOML toml = TOMLParser.parseFromInputStream(...);
+
+// Query the value of "dependencies/arrow-array/optional"
+bool optional1 = toml.getBoolean("dependencies/arrow-array/optional").orElse(false);
+
+// Or query a subtree
+bool optional2 = toml.getSubtree("dependencies").getBoolean("arrow-array/optional").orElse(false);
+
+```
+
+## Antlr4 Parser
+
+The ANTLR4 parser (automatically generated) is also available under the `net.vieiro.toml.antlr4` package. This API is
+considered stable in minor version (`1.2.X` at the time being). If the grammar changes then
+the minor version will be also upgraded.
+
 
 ## Type mapping
 
-The java object tree generated after parsing a TOML document is created with the following Java types:
+The Java object tree generated after parsing a TOML document is created with the following Java types:
 
 | TOML Type | Java Type |
 |-----------|-----------|
@@ -155,4 +189,22 @@ Produces:
 
 Please file an issue if you find a TOML document that can't be parsed with this library.
 
+## Release notes
+
+## 1.1.1 Initial version
+
+This version depends on Antlr4 v4.13.1.
+
+## 1.1.11 Dependency downgrade
+
+This version depends on Antlr4 v4.11.1 (changed to adhere to NetBeans Antlr4 version).
+
+## 2.13.1 Antlr4 Lexer & Parser
+
+- Changed versioning schema. Major: Grammar version, Minor: Antlr4 version, Patch: bug fixes. (e.g. 2.13.1 means Grammar version 2, Antlr 4.13.X, Release 1)
+- The Antlr4 lexer and parser is now considered a public API.
+- Updated the lexer to work nicely with unclosed literal strings (for NetBeans IDE Editor integration).
+- Upgraded Antlr4 runtime to v4.13.1 again.
+- Simple query language now ignores contiguous or leading spaces (this is, the following queries are equivalent: "/a/b", "a/b", "a//b").
+- Added "subtree" queries
 

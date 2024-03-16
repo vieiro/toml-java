@@ -45,6 +45,7 @@ public final class TOML {
         this.errors = Collections.unmodifiableList(errors);
     }
 
+
     /**
      * Returns a list of the syntax errors generated during parsing.
      *
@@ -61,6 +62,16 @@ public final class TOML {
      */
     public Map<String, Object> getRoot() {
         return root;
+    }
+
+    /**
+     * Returns a new TOML subtree given a prefix.
+     * @param prefix The prefix.
+     * @return A TOML object to query the subtree.
+     */
+    public TOML subtree(String prefix) {
+        Map<String, Object> subtree = getTable(prefix).orElse(Collections.<String, Object>emptyMap());
+        return new TOML(subtree, errors);
     }
 
     /**

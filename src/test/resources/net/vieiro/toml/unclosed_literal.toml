@@ -1,0 +1,10 @@
+#
+# TOMLAntlrLexer now recognizes unclosed strings, marking them as errors, and
+# errors are then reported through the TOMLAntlrParser.
+#
+# This makes it easier to integrate the AntlrLexer into NetBeans, for instance.
+#
+unclosed = '123
+closed = 'abc'
+whatever = "abc"
+another = "xyz

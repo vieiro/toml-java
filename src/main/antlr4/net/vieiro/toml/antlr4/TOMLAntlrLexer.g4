@@ -19,7 +19,9 @@
 
 // From https://github.com/antlr/grammars-v4/blob/master/toml/TomlLexer.g4 (APLv2)
 
-lexer grammar TomlLexerInternal;
+lexer grammar TOMLAntlrLexer;
+
+tokens { TOML_ERROR }
 
 
 WS : [ \t]+ -> skip ;
@@ -47,6 +49,7 @@ fragment UNICODE : 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT ;
 fragment EX_UNICODE : 'U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT ;
 BASIC_STRING : '"' (ESC | ~["\\\n])*? '"' ;
 LITERAL_STRING : '\'' (~['\n])*? '\'' ;
+UNCLOSED_LITERAL_STRING : '\'' (~['\n])*? '\n' -> type(TOML_ERROR);
 
 // keys
 UNQUOTED_KEY : (ALPHA | DIGIT | '-' | '_')+ ;
@@ -67,6 +70,7 @@ VALUE_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING), popMode ;
 // TODO: Add a proper submode for ML_BASIC_STRING that handles """ nicely
 ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' ('"')* {_input.LA(1) != '"' }? -> popMode ;
 VALUE_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING), popMode ;
+VALUE_UNCLOSED_LITERAL_STRING: UNCLOSED_LITERAL_STRING -> type(TOML_ERROR), popMode;
 // TODO: Add a proper submode for ML_LITERAL_STRING that handles ''' nicely'
 ML_LITERAL_STRING : '\'\'\'' (.)*? '\'\'\'' ('\'')* { _input.LA(1) != '\'' }? -> popMode ;
 

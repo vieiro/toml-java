@@ -18,7 +18,7 @@ package net.vieiro.toml;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import net.vieiro.toml.antlr4.TomlParserInternal;
+import net.vieiro.toml.antlr4.TOMLAntlrParser;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 /**
@@ -218,7 +218,7 @@ final class TOMLStringVisitor {
         }
     }
 
-    static Object visitString(TomlParserInternal.StringContext ctx) {
+    static Object visitString(TOMLAntlrParser.StringContext ctx) {
         try {
             String value = null;
             if (ctx.BASIC_STRING() != null) {
@@ -266,7 +266,7 @@ final class TOMLStringVisitor {
         }
     }
 
-    static Object visitQuoted_key(TomlParserInternal.Quoted_keyContext ctx) {
+    static Object visitQuoted_key(TOMLAntlrParser.Quoted_keyContext ctx) {
         try {
             String value = null;
             if (ctx.BASIC_STRING() != null) {
@@ -290,7 +290,7 @@ final class TOMLStringVisitor {
         }
     }
 
-    static Object visitUnquoted_key(TomlParserInternal.Unquoted_keyContext ctx) {
+    static Object visitUnquoted_key(TOMLAntlrParser.Unquoted_keyContext ctx) {
         String UNQUOTED_KEY = ctx.UNQUOTED_KEY().getText();
         // Grammar makes it impossible for UNQUOTED_KEY to contain dots. Let's check it, anyway
         if (UNQUOTED_KEY.indexOf('.') != -1) {

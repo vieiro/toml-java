@@ -16,12 +16,21 @@
 package net.vieiro.toml;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import org.junit.jupiter.api.Test;
 
 /**
  *
  */
 public class TOMLStringTest {
+
+    @Test
+    public void testShouldDetectUnclosedStringsProperly() throws Exception {
+        System.out.println("testShouldDetectUnclosedStringsProperly");
+        TOML toml = Util.parse("unclosed_literal.toml", false, true);
+        assertFalse(toml.errors.isEmpty());
+        assertEquals(4, toml.errors.size());
+    }
 
     @Test
     public void testShouldParseStringsProperly() throws Exception {

@@ -34,8 +34,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import net.vieiro.toml.antlr4.TomlParserInternal;
-import net.vieiro.toml.antlr4.TomlParserInternalVisitor;
+import net.vieiro.toml.antlr4.TOMLAntlrParser;
+import net.vieiro.toml.antlr4.TOMLAntlrParserVisitor;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -54,7 +54,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
  * TOMLVisitor is responsible for visiting the parsed TOML nodes and, while doing it,
  * building a Java object-tree representation of the TOML document.
  */
-final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor<Object> {
+final class TOMLVisitor implements ANTLRErrorListener, TOMLAntlrParserVisitor<Object> {
 
     /**
      * Set to Level.INFO for debugging.
@@ -148,14 +148,14 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     //----------------------------------------------------------------------
-    // TomlParserInternalVisitor
+    // TOMLAntlrParserVisitor
     //
     // Note that there're UnsupportedOperationExceptions below, these will fire
     // if one changes the Antlr4 lexexr/parser and does not implement the
     // proper methods.  These are kept for defensive-programming purposes.
     //
     @Override
-    public Object visitDocument(TomlParserInternal.DocumentContext ctx) {
+    public Object visitDocument(TOMLAntlrParser.DocumentContext ctx) {
         reset();
         if (ctx.expression() != null) {
             for (ParserRuleContext expression : ctx.expression()) {
@@ -166,7 +166,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitExpression(TomlParserInternal.ExpressionContext ctx) {
+    public Object visitExpression(TOMLAntlrParser.ExpressionContext ctx) {
         if (ctx.key_value() != null) {
             return ctx.key_value().accept(this);
         } else if (ctx.table() != null) {
@@ -181,12 +181,12 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitComment(TomlParserInternal.CommentContext ctx) {
+    public Object visitComment(TOMLAntlrParser.CommentContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Object visitKey(TomlParserInternal.KeyContext ctx) {
+    public Object visitKey(TOMLAntlrParser.KeyContext ctx) {
         if (ctx.simple_key() != null) {
             return ctx.simple_key().accept(this);
         } else if (ctx.dotted_key() != null) {
@@ -196,7 +196,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitSimple_key(TomlParserInternal.Simple_keyContext ctx) {
+    public Object visitSimple_key(TOMLAntlrParser.Simple_keyContext ctx) {
         if (ctx.quoted_key() != null) {
             return ctx.quoted_key().accept(this);
         } else if (ctx.unquoted_key() != null) {
@@ -206,22 +206,22 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitUnquoted_key(TomlParserInternal.Unquoted_keyContext ctx) {
+    public Object visitUnquoted_key(TOMLAntlrParser.Unquoted_keyContext ctx) {
         return TOMLStringVisitor.visitUnquoted_key(ctx);
     }
 
     @Override
-    public Object visitQuoted_key(TomlParserInternal.Quoted_keyContext ctx) {
+    public Object visitQuoted_key(TOMLAntlrParser.Quoted_keyContext ctx) {
         return TOMLStringVisitor.visitQuoted_key(ctx);
     }
 
     @Override
-    public Object visitDotted_key(TomlParserInternal.Dotted_keyContext ctx) {
+    public Object visitDotted_key(TOMLAntlrParser.Dotted_keyContext ctx) {
         return ctx.simple_key().stream().map(simple_key -> simple_key.accept(this)).collect(Collectors.toList());
     }
 
     @Override
-    public Object visitValue(TomlParserInternal.ValueContext ctx) {
+    public Object visitValue(TOMLAntlrParser.ValueContext ctx) {
         if (ctx.string() != null) {
             return ctx.string().accept(this);
         } else if (ctx.integer() != null) {
@@ -241,12 +241,12 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitString(TomlParserInternal.StringContext ctx) {
+    public Object visitString(TOMLAntlrParser.StringContext ctx) {
         return TOMLStringVisitor.visitString(ctx);
     }
 
     @Override
-    public Object visitInteger(TomlParserInternal.IntegerContext ctx) {
+    public Object visitInteger(TOMLAntlrParser.IntegerContext ctx) {
         int radix = 10;
         String longText = null;
         if (ctx.DEC_INT() != null) {
@@ -270,7 +270,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitFloating_point(TomlParserInternal.Floating_pointContext ctx) {
+    public Object visitFloating_point(TOMLAntlrParser.Floating_pointContext ctx) {
         if (ctx.NAN() != null) {
             return Double.NaN;
         } else if (ctx.INF() != null) {
@@ -282,7 +282,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitBool_(TomlParserInternal.Bool_Context ctx) {
+    public Object visitBool_(TOMLAntlrParser.Bool_Context ctx) {
         String BOOLEAN = ctx.BOOLEAN().getText();
         return Boolean.valueOf(BOOLEAN);
     }
@@ -290,7 +290,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     private static final DateTimeFormatter DATETIME_WITH_SPACES = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
-    public Object visitDate_time(TomlParserInternal.Date_timeContext ctx) {
+    public Object visitDate_time(TOMLAntlrParser.Date_timeContext ctx) {
         try {
             if (ctx.OFFSET_DATE_TIME() != null) {
                 String OFFSET_DATE_TIME = ctx.OFFSET_DATE_TIME().getText();
@@ -322,7 +322,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
 
     @SuppressWarnings("unchecked")
     @Override
-    public Object visitInline_table(TomlParserInternal.Inline_tableContext ctx) {
+    public Object visitInline_table(TOMLAntlrParser.Inline_tableContext ctx) {
         Map<String, Object> inlineTable = new HashMap<>();
         if (ctx.key() != null) {
             List<List<String>> listOfKeys = ctx.key().stream()
@@ -359,7 +359,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitInner_array(TomlParserInternal.Inner_arrayContext ctx) {
+    public Object visitInner_array(TOMLAntlrParser.Inner_arrayContext ctx) {
         if (ctx.inline_value() != null) {
             List<Object> innerArray = ctx.inline_value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
             return Collections.unmodifiableList(innerArray);
@@ -368,7 +368,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitInline_value(TomlParserInternal.Inline_valueContext ctx) {
+    public Object visitInline_value(TOMLAntlrParser.Inline_valueContext ctx) {
         if (ctx.string() != null) {
             return ctx.string().accept(this);
         } else if (ctx.integer() != null) {
@@ -388,7 +388,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitArray_(TomlParserInternal.Array_Context ctx) {
+    public Object visitArray_(TOMLAntlrParser.Array_Context ctx) {
         ArrayList<Object> array = new ArrayList<Object>();
         arrayStack.push(array);
         if (ctx.array_values() != null) {
@@ -399,7 +399,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitArray_values(TomlParserInternal.Array_valuesContext ctx) {
+    public Object visitArray_values(TOMLAntlrParser.Array_valuesContext ctx) {
         List<Object> current = arrayStack.peek();
         if (ctx.value() != null) {
             current.add(ctx.value().accept(this));
@@ -411,12 +411,12 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitComment_or_nl(TomlParserInternal.Comment_or_nlContext ctx) {
+    public Object visitComment_or_nl(TOMLAntlrParser.Comment_or_nlContext ctx) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Object visitTable(TomlParserInternal.TableContext ctx) {
+    public Object visitTable(TOMLAntlrParser.TableContext ctx) {
         if (ctx.standard_table() != null) {
             return ctx.standard_table().accept(this);
         } else if (ctx.array_table() != null) {
@@ -426,7 +426,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitKey_value(TomlParserInternal.Key_valueContext ctx) {
+    public Object visitKey_value(TOMLAntlrParser.Key_valueContext ctx) {
         List<String> key = toKey(ctx.key().accept(this));
         LOG.log(LEVEL, "Visiting key-value with key {0}", key);
 
@@ -451,7 +451,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
      * @return The newly created table
      */
     @Override
-    public Object visitStandard_table(TomlParserInternal.Standard_tableContext ctx) {
+    public Object visitStandard_table(TOMLAntlrParser.Standard_tableContext ctx) {
         List<String> key = toKey(ctx.key().accept(this));
         LOG.log(LEVEL, "Visiting standard table with key {0}", key);
 
@@ -464,7 +464,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @Override
-    public Object visitArray_table(TomlParserInternal.Array_tableContext ctx) {
+    public Object visitArray_table(TOMLAntlrParser.Array_tableContext ctx) {
         List<String> key = toKey(ctx.key().accept(this));
         LOG.log(LEVEL, "Visiting standard table with key {0}", key);
 
@@ -577,7 +577,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> createStandardTable(TomlParserInternal.Standard_tableContext ctx, List<String> key) {
+    private Map<String, Object> createStandardTable(TOMLAntlrParser.Standard_tableContext ctx, List<String> key) {
         Map<String, Object> container = root;
         for (int i = 0; i < key.size() - 1; i++) {
             String part = key.get(i);
@@ -657,7 +657,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TomlParserInternalVisitor
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> createArrayTable(TomlParserInternal.Array_tableContext ctx, List<String> key) {
+    private Map<String, Object> createArrayTable(TOMLAntlrParser.Array_tableContext ctx, List<String> key) {
         Map<String, Object> container = root;
         for (int i = 0; i < key.size() - 1; i++) {
             String part = key.get(i);

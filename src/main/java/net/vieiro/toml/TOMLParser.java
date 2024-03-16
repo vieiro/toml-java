@@ -28,8 +28,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.vieiro.toml.antlr4.TomlLexerInternal;
-import net.vieiro.toml.antlr4.TomlParserInternal;
+import net.vieiro.toml.antlr4.TOMLAntlrLexer;
+import net.vieiro.toml.antlr4.TOMLAntlrParser;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointBuffer;
@@ -139,13 +139,13 @@ public final class TOMLParser {
     private static TOML parse(CharStream input) {
         TOMLVisitor visitor = new TOMLVisitor();
 
-        TomlLexerInternal lexer = new TomlLexerInternal(input);
+        TOMLAntlrLexer lexer = new TOMLAntlrLexer(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(visitor);
 
         TokenStream tokens = new CommonTokenStream(lexer);
 
-        TomlParserInternal parser = new TomlParserInternal(tokens);
+        TOMLAntlrParser parser = new TOMLAntlrParser(tokens);
         parser.removeErrorListeners();
         parser.addErrorListener(visitor);
 

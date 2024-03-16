@@ -15,8 +15,13 @@
  */
 package net.vieiro.toml;
 
+import net.vieiro.toml.antlr4.TOMLAntlrLexer;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Token;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +33,22 @@ public final class Util {
 
     public static TOML parse(String resource, boolean verbose) throws IOException {
         return parse(resource, verbose, false);
+    }
+
+    public static void dumpTokens(String resource) throws IOException {
+        try (InputStream input = Util.class.getResourceAsStream(resource)) {
+            TOMLAntlrLexer lexer = new TOMLAntlrLexer(CharStreams.fromStream(input, StandardCharsets.UTF_8));
+            do {
+                Token token = lexer.nextToken();
+                int tokenType = token.getType();
+                if (token == null || tokenType == TOMLAntlrLexer.EOF) {
+                    break;
+                }
+                String literalName = lexer.getVocabulary().getLiteralName(tokenType);
+                String symbolName = lexer.getVocabulary().getSymbolicName(tokenType);
+                System.out.format("%-20s : %s%n", symbolName, token.getText().replace("\n", "\\n"));
+            } while(true);
+        }
     }
 
     public static TOML parse(String resource, boolean verbose, boolean allowingErrors) throws IOException {

@@ -32,6 +32,9 @@ final class TOMLSimpleQuery {
         Object context = root;
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
+            if (part.isBlank()) {
+                continue;
+            }
             if (context instanceof Map) {
                 // Context is a map (TOML Table)
                 Map<Object, Object> map = (Map<Object, Object>) context;

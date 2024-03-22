@@ -21,7 +21,7 @@
 
 lexer grammar TOMLAntlrLexer;
 
-tokens { TOML_ERROR }
+tokens { INVALID_VALUE }
 
 
 WS : [ \t]+ -> skip ;
@@ -47,13 +47,17 @@ fragment ALPHA : [A-Za-z] ;
 fragment ESC : '\\' (["\\/bfnrt] | UNICODE | EX_UNICODE) ;
 fragment UNICODE : 'u' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT ;
 fragment EX_UNICODE : 'U' HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT HEX_DIGIT ;
+
 BASIC_STRING : '"' (ESC | ~["\\\n])*? '"' ;
+UNCLOSED_BASIC_STRING : '"' (ESC | ~["\\\n])* (~(["]) | EOF)-> type(INVALID_VALUE);
+
 LITERAL_STRING : '\'' (~['\n])*? '\'' ;
-UNCLOSED_LITERAL_STRING : '\'' (~['\n])*? '\n' -> type(TOML_ERROR);
+UNCLOSED_LITERAL_STRING : '\'' (~['\n])*? ('\n' | EOF) -> type(INVALID_VALUE);
 
 // keys
 UNQUOTED_KEY : (ALPHA | DIGIT | '-' | '_')+ ;
 
+//----------------------------------------------------------------------
 mode SIMPLE_VALUE_MODE;
 
 VALUE_WS: WS -> skip ;
@@ -66,18 +70,25 @@ BOOLEAN : ('true' | 'false') -> popMode ;
 
 // strings
 fragment ML_SPECIAL : '\\' '\r'? '\n' | ESC | '""' | '"' | '\\';
+
 VALUE_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING), popMode ;
-// TODO: Add a proper submode for ML_BASIC_STRING that handles """ nicely
-ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' ('"')* {_input.LA(1) != '"' }? -> popMode ;
+VALUE_UNCLOSED_BASIC_STRING : UNCLOSED_BASIC_STRING -> type(INVALID_VALUE), popMode ;
+
+ML_BASIC_STRING : '"""' (ML_SPECIAL | ~["\\])*? '"""' ('"')* { _input.LA(1) != '"' }? -> popMode ;
+ML_UNCLOSED_BASIC_STRING: '"""' (ML_SPECIAL | ~["\\])*? (EOF | '"') -> type(INVALID_VALUE), popMode;
+
 VALUE_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING), popMode ;
-VALUE_UNCLOSED_LITERAL_STRING: UNCLOSED_LITERAL_STRING -> type(TOML_ERROR), popMode;
-// TODO: Add a proper submode for ML_LITERAL_STRING that handles ''' nicely'
+VALUE_UNCLOSED_LITERAL_STRING: UNCLOSED_LITERAL_STRING -> type(INVALID_VALUE), popMode;
+
 ML_LITERAL_STRING : '\'\'\'' (.)*? '\'\'\'' ('\'')* { _input.LA(1) != '\'' }? -> popMode ;
 
 // floating point numbers
 fragment EXP : ('e' | 'E') [+-]? ZERO_PREFIXABLE_INT ;
 fragment ZERO_PREFIXABLE_INT : DIGIT (DIGIT | '_' DIGIT)* ;
 fragment FRAC : '.' ZERO_PREFIXABLE_INT ;
+INVALID_FLOAT_EOF: DEC_INT '.' EOF -> type(INVALID_VALUE), popMode;
+INVALID_FLOAT : DEC_INT '.' ~('e' | 'E' | [0-9]) -> type(INVALID_VALUE), popMode;
+INVALID_FLOAT_2: DEC_INT ('e' | 'E') ('+' | '-')? -> type(INVALID_VALUE), popMode;
 FLOAT : DEC_INT ( EXP | FRAC EXP?) -> popMode ;
 INF : [+-]? 'inf' -> popMode ;
 NAN : [+-]? 'nan' -> popMode ;
@@ -111,6 +122,17 @@ LOCAL_DATE_TIME : FULL_DATE DELIM PARTIAL_TIME -> popMode ;
 LOCAL_DATE : FULL_DATE -> popMode ;
 LOCAL_TIME : PARTIAL_TIME -> popMode ;
 
+INVALID_HOUR_MINUTE: HOUR ':' MINUTE ':' DIGIT? -> type(INVALID_VALUE), popMode;
+INVALID_HOUR: HOUR ':' DIGIT? -> type(INVALID_VALUE), popMode;
+
+INVALID_OFFSET_DATE_TIME_1: FULL_DATE DELIM INVALID_HOUR_MINUTE -> type(INVALID_VALUE), popMode;
+INVALID_OFFSET_DATE_TIME_2: FULL_DATE DELIM INVALID_HOUR -> type(INVALID_VALUE), popMode;
+fragment INVALID_NUMOFFSET: HOUR ':' DIGIT?;
+INVALID_OFFSET_DATE_TIME_3: FULL_DATE DELIM PARTIAL_TIME ('+'| '-') INVALID_NUMOFFSET -> type(INVALID_VALUE), popMode;
+
+UNEXPECTED_VALUE_DATA: . -> type(INVALID_VALUE), popMode;
+
+//----------------------------------------------------------------------
 mode INLINE_TABLE_MODE;
 
 INLINE_TABLE_WS : WS -> skip ;
@@ -119,11 +141,13 @@ INLINE_TABLE_COMMA : COMMA -> type(COMMA) ;
 R_BRACE : '}' -> popMode ;
 
 INLINE_TABLE_KEY_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING) ;
+INLINE_TABLE_KEY_UNCLOSED_BASIC_STRING : UNCLOSED_BASIC_STRING -> type(INVALID_VALUE) ;
 INLINE_TABLE_KEY_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING) ;
 INLINE_TABLE_KEY_UNQUOTED: UNQUOTED_KEY -> type(UNQUOTED_KEY) ;
 
 INLINE_TABLE_EQUALS : EQUALS -> type(EQUALS), pushMode(SIMPLE_VALUE_MODE) ;
 
+//----------------------------------------------------------------------
 mode ARRAY_MODE;
 
 ARRAY_WS : WS -> skip ;
@@ -138,13 +162,16 @@ ARRAY_END : R_BRACKET -> type(R_BRACKET), popMode ;
 ARRAY_BOOLEAN : BOOLEAN -> type(BOOLEAN) ;
 
 ARRAY_BASIC_STRING : BASIC_STRING -> type(BASIC_STRING) ;
+ARRAY_UNCLOSED_BASIC_STRING: UNCLOSED_BASIC_STRING -> type(INVALID_VALUE);
 ARRAY_ML_BASIC_STRING : ML_BASIC_STRING -> type(ML_BASIC_STRING) ;
 ARRAY_LITERAL_STRING : LITERAL_STRING -> type(LITERAL_STRING) ;
+ARRAY_UNCLOSED_LITERAL_STRING: UNCLOSED_LITERAL_STRING -> type(INVALID_VALUE);
 ARRAY_ML_LITERAL_STRING : ML_LITERAL_STRING -> type(ML_LITERAL_STRING) ;
 
 ARRAY_FLOAT : FLOAT -> type(FLOAT) ;
 ARRAY_INF : INF -> type(INF) ;
 ARRAY_NAN : NAN -> type(NAN) ;
+ARRAY_INVALID_FLOAT: (FLOAT | INVALID_FLOAT_EOF | INVALID_FLOAT) -> type(INVALID_VALUE);
 
 ARRAY_DEC_INT : DEC_INT -> type(DEC_INT) ;
 ARRAY_HEX_INT : HEX_INT -> type(HEX_INT) ;

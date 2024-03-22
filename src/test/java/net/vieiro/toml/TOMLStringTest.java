@@ -29,7 +29,7 @@ public class TOMLStringTest {
         System.out.println("testShouldDetectUnclosedStringsProperly");
         TOML toml = Util.parse("unclosed_literal.toml", false, true);
         assertFalse(toml.errors.isEmpty());
-        assertEquals(4, toml.errors.size());
+        assertEquals(3, toml.errors.size());
     }
 
     @Test

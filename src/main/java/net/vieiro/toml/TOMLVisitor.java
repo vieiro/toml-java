@@ -128,7 +128,7 @@ final class TOMLVisitor implements ANTLRErrorListener, TOMLAntlrParserVisitor<Ob
     // AntlrErrorListener
     @Override
     public void syntaxError(Recognizer<?, ?> rcgnzr, Object o, int line, int col, String message, RecognitionException re) {
-        String error = String.format("Syntax error at %d:%d %s", line, col, message);
+        String error = String.format("%d:%d Syntax error %s", line, col, message);
         errors.add(error);
     }
 

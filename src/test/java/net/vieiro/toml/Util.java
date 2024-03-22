@@ -15,6 +15,7 @@
  */
 package net.vieiro.toml;
 
+import java.io.ByteArrayOutputStream;
 import net.vieiro.toml.antlr4.TOMLAntlrLexer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.Token;
@@ -47,7 +48,7 @@ public final class Util {
                 String literalName = lexer.getVocabulary().getLiteralName(tokenType);
                 String symbolName = lexer.getVocabulary().getSymbolicName(tokenType);
                 System.out.format("%-20s : %s%n", symbolName, token.getText().replace("\n", "\\n"));
-            } while(true);
+            } while (true);
         }
     }
 
@@ -76,6 +77,30 @@ public final class Util {
 
             return toml;
         }
+    }
+
+    /**
+     * Reads a resource as a String
+     *
+     * @param resource The name of the resource
+     * @return The content
+     */
+    public static String read(String resource) throws IOException {
+        byte[] buffer = new byte[16 * 2024];
+        String result;
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream(16 * 2024)) {
+            try (InputStream input = Util.class.getResourceAsStream(resource)) {
+                while (true) {
+                    int n = input.read(buffer);
+                    if (n < 0) {
+                        break;
+                    }
+                    bos.write(buffer, 0, n);
+                }
+            }
+            result = new String(bos.toByteArray(), StandardCharsets.UTF_8);
+        }
+        return result;
     }
 
 }

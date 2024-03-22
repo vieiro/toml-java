@@ -18,12 +18,12 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 <dependency>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>2.13.1</version>
+    <version>13.3.1</version>
 </dependency>
 ```
 
 ```
-implementation 'net.vieiro:toml-java:2.13.1'
+implementation 'net.vieiro:toml-java:13.3.1'
 ```
 
 ## Basic usage
@@ -201,10 +201,20 @@ This version depends on Antlr4 v4.11.1 (changed to adhere to NetBeans Antlr4 ver
 
 ## 2.13.1 Antlr4 Lexer & Parser
 
-- Changed versioning schema. Major: Grammar version, Minor: Antlr4 version, Patch: bug fixes. (e.g. 2.13.1 means Grammar version 2, Antlr 4.13.X, Release 1)
+- Changed versioning scheme. Major: Grammar version, Minor: Antlr4 version, Patch: bug fixes. (e.g. 2.13.1 means Grammar version 2, Antlr 4.13.X, Release 1)
 - The Antlr4 lexer and parser is now considered a public API.
 - Updated the lexer to work nicely with unclosed literal strings (for NetBeans IDE Editor integration).
 - Upgraded Antlr4 runtime to v4.13.1 again.
 - Simple query language now ignores contiguous or leading spaces (this is, the following queries are equivalent: "/a/b", "a/b", "a//b").
-- Added "subtree" queries
+- Added "subtree" queries, to ease analyzing subtrees.
+
+## 13.3.1 
+
+- Changed versioning scheme to:
+    - Major: antlr version (for instance, `13` means `Antlr 4.13.X`
+    - Minor: toml-java grammar version.
+    - Patch: bug fixes
+- The lexer now detects incomplete tokens and properly reports them with token `INVALID_VALUE`.
+    - This is useful for the NetBeans Antlr bridge.
+- toml-java runs 555 unit tests.
 

@@ -57,6 +57,8 @@ UNCLOSED_LITERAL_STRING : '\'' (~['\n])*? ('\n' | EOF) -> type(INVALID_VALUE);
 // keys
 UNQUOTED_KEY : (ALPHA | DIGIT | '-' | '_')+ ;
 
+INVALID_VALUE: .;
+
 //----------------------------------------------------------------------
 mode SIMPLE_VALUE_MODE;
 

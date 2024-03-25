@@ -12,18 +12,25 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
 ## Maven & Gradle coordinates
 
-### Dependency on Antlr 4.13.1
+- Current version: 13.4.1
+    - 13 - Dependency on Antlr 4.13.1
+    - 4 - TOML grammar version 4
+    - 1 - Release 1
+
+Maven:
 
 ```xml
 <dependency>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>13.3.1</version>
+    <version>13.4.1</version>
 </dependency>
 ```
 
-```
-implementation 'net.vieiro:toml-java:13.3.1'
+Gradle:
+
+```groovy
+implementation 'net.vieiro:toml-java:13.4.1'
 ```
 
 ## Basic usage
@@ -54,40 +61,10 @@ String red = toml.getString("fruits/0/physical/color").orElse(null);
 
 ```
 
-### Subtree queries
-
-In order to parse complex TOML documents, one can retrieve a subtree and query it. For instance, given the following TOML document:
-
-```toml
-[package]
-name = "parquet"
-version = {workspace = true}
-
-[dependencies]
-arrow-array = {worskpace = true, optional = true}
-
-```
-
-You could query it using either the TOML "root" object or use a subtree TOML object, like so:
-
-```java
-// Parse the document
-TOML toml = TOMLParser.parseFromInputStream(...);
-
-// Query the value of "dependencies/arrow-array/optional"
-bool optional1 = toml.getBoolean("dependencies/arrow-array/optional").orElse(false);
-
-// Or query a subtree
-bool optional2 = toml.getSubtree("dependencies").getBoolean("arrow-array/optional").orElse(false);
-
-```
-
 ## Antlr4 Parser
 
 The ANTLR4 parser (automatically generated) is also available under the `net.vieiro.toml.antlr4` package. This API is
-considered stable in minor version (`1.2.X` at the time being). If the grammar changes then
-the minor version will be also upgraded.
-
+considered stable in minor version. If the grammar changes then the minor version will be also upgraded.
 
 ## Type mapping
 
@@ -161,7 +138,35 @@ You can use negative indexes (-1, -2) for accessing arrays from the end.
 
 See `TOML.java` for different query methods.
 
-## Advanced querying
+### Subtree queries
+
+In order to parse complex TOML documents, one can retrieve a subtree and query it. For instance, given the following TOML document:
+
+```toml
+[package]
+name = "parquet"
+version = {workspace = true}
+
+[dependencies]
+arrow-array = {worskpace = true, optional = true}
+
+```
+
+You could query it using either the TOML "root" object or use a subtree TOML object, like so:
+
+```java
+// Parse the document
+TOML toml = TOMLParser.parseFromInputStream(...);
+
+// Query the value of "dependencies/arrow-array/optional"
+bool optional1 = toml.getBoolean("dependencies/arrow-array/optional").orElse(false);
+
+// Or query a subtree
+bool optional2 = toml.getSubtree("dependencies").getBoolean("arrow-array/optional").orElse(false);
+
+```
+
+### More advanced querying
 
 You can use more advanced techniques and expression languages for querying the
 object tree. The unit tests have some examples for querying the object tree using
@@ -217,4 +222,9 @@ This version depends on Antlr4 v4.11.1 (changed to adhere to NetBeans Antlr4 ver
 - The lexer now detects incomplete tokens and properly reports them with token `INVALID_VALUE`.
     - This is useful for the NetBeans Antlr bridge.
 - toml-java runs 555 unit tests.
+
+## 13.4.1
+
+- Downgrading to JDK8 class format.
+- Grammar updated to version 4: lexer detects more unexpected tokens.
 

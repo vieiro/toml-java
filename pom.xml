@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>13.4.2</version>
+    <version>13.4.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>toml-java</name>
@@ -22,7 +22,7 @@
         <connection>scm:git:git@github.com:vieiro/toml-java.git</connection>
         <developerConnection>scm:git:git@github.com:vieiro/toml-java.git</developerConnection>
         <url>https://github.com/vieiro/toml-java</url>
-      <tag>v13.4.2</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <issueManagement>

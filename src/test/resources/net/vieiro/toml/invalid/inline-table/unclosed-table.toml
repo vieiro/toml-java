@@ -1,0 +1,3 @@
+[plugins]
+jooq-codegen = { id = "org.jooq.jooq-codegen-gradle", version.ref="jooq" 
+

@@ -12,10 +12,10 @@ A parser for [TOML](https://toml.io/en/) files with minimum dependencies.
 
 ## Maven & Gradle coordinates
 
-- Current version: 13.4.1
+- Current version: 13.4.2
     - 13 - Dependency on Antlr 4.13.1
     - 4 - TOML grammar version 4
-    - 1 - Release 1
+    - 2 - Release 2
 
 Maven:
 
@@ -23,14 +23,14 @@ Maven:
 <dependency>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>13.4.1</version>
+    <version>13.4.2</version>
 </dependency>
 ```
 
 Gradle:
 
 ```groovy
-implementation 'net.vieiro:toml-java:13.4.1'
+implementation 'net.vieiro:toml-java:13.4.2'
 ```
 
 ## Basic usage
@@ -227,4 +227,8 @@ This version depends on Antlr4 v4.11.1 (changed to adhere to NetBeans Antlr4 ver
 
 - Downgrading to JDK8 class format.
 - Grammar updated to version 4: lexer detects more unexpected tokens.
+
+## 13.4.2
+
+- Handling of unclosed inline-tables and arrays with invalid tokens for NetBeans.
 

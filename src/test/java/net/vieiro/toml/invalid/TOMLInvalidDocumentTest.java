@@ -151,6 +151,7 @@ public class TOMLInvalidDocumentTest {
         "invalid/inline-table/no-comma.toml",
         "invalid/inline-table/overwrite.toml",
         "invalid/inline-table/trailing-comma.toml",
+        "invalid/inline-table/unclosed-table.toml",
         "invalid/integer/capital-bin.toml",
         "invalid/integer/capital-hex.toml",
         "invalid/integer/capital-oct.toml",
@@ -291,6 +292,39 @@ public class TOMLInvalidDocumentTest {
         System.out.format("testShouldDetectErrorsInInvalidTOMLDocuments - %s%n", tomlInvalidDocumentName);
 
         boolean verbose = false;
+
+        // Given a TOML document with errors
+        TOML toml = null;
+
+        try {
+            toml = Util.parse(tomlInvalidDocumentName, verbose, true);
+        } catch (Exception e) {
+            String message = String.format("Test '%s failed with exception %s:%s", tomlInvalidDocumentName, e.getMessage(), e.getClass().getName());
+            fail(message, e);
+        }
+
+        // Then the number of detected errors should be equal to the number of expected errors.
+        int numberOfDetectedErrors = toml.getErrors().size();
+
+        if (numberOfDetectedErrors > 0) {
+            if (verbose) {
+                for (String error : toml.getErrors()) {
+                    System.out.format("  - ERROR: %s: %s%n", tomlInvalidDocumentName, error);
+                }
+            }
+        } else {
+            fail(String.format("  Test %s must fail, but doesn't", tomlInvalidDocumentName));
+        }
+    }
+
+    @ParameterizedTest()
+    @ValueSource(strings = {
+        "invalid/inline-table/unclosed-table.toml",
+    })
+    public void testShouldBehaveOnUnclosedTable(String tomlInvalidDocumentName) {
+        System.out.format("testShouldDetectErrorsInInvalidTOMLDocuments - %s%n", tomlInvalidDocumentName);
+
+        boolean verbose = true;
 
         // Given a TOML document with errors
         TOML toml = null;

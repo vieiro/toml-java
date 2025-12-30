@@ -46,6 +46,16 @@ public class TOMLArrayTest {
             assertEquals(3, ((List) nested_arrays_of_ints.get(1)).size());
         }
 
+        {
+            assertTrue(toml.getArray("multiline-array").isPresent());
+            List<Object> multilineArray = toml.getArray("multiline-array").get();
+            assertEquals(4, multilineArray.size());
+            assertEquals(1L, multilineArray.get(0));
+            assertEquals(2L, multilineArray.get(1));
+            assertEquals(3L, multilineArray.get(2));
+            assertEquals(5L, multilineArray.get(3));
+        }
+
     }
 
 }

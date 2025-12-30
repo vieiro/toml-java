@@ -52,13 +52,11 @@ bool_ : BOOLEAN ;
 
 date_time : OFFSET_DATE_TIME | LOCAL_DATE_TIME | LOCAL_DATE | LOCAL_TIME ;
 
-inline_table : 
-    L_BRACE key EQUALS inline_value (COMMA key EQUALS inline_value)*? R_BRACE 
-    | L_BRACE R_BRACE;
+inline_table :
+    L_BRACE comment_or_nl key EQUALS inline_value comment_or_nl (COMMA comment_or_nl key EQUALS inline_value comment_or_nl)* (COMMA comment_or_nl)? R_BRACE
+    | L_BRACE comment_or_nl R_BRACE;
 
-inner_array: L_BRACKET inline_value? (COMMA inline_value)*? COMMA*? R_BRACKET;
-
-inline_value: string | integer | floating_point | bool_ | date_time | inner_array | inline_table;
+inline_value: string | integer | floating_point | bool_ | date_time | array_ | inline_table;
 
 array_ : L_BRACKET array_values? comment_or_nl R_BRACKET ;
 

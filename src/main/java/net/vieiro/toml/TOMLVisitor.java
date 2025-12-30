@@ -359,15 +359,6 @@ final class TOMLVisitor implements ANTLRErrorListener, TOMLAntlrParserVisitor<Ob
     }
 
     @Override
-    public Object visitInner_array(TOMLAntlrParser.Inner_arrayContext ctx) {
-        if (ctx.inline_value() != null) {
-            List<Object> innerArray = ctx.inline_value().stream().map((v) -> v.accept(this)).collect(Collectors.toList());
-            return Collections.unmodifiableList(innerArray);
-        }
-        return Collections.emptyList();
-    }
-
-    @Override
     public Object visitInline_value(TOMLAntlrParser.Inline_valueContext ctx) {
         if (ctx.string() != null) {
             return ctx.string().accept(this);
@@ -379,8 +370,8 @@ final class TOMLVisitor implements ANTLRErrorListener, TOMLAntlrParserVisitor<Ob
             return ctx.bool_().accept(this);
         } else if (ctx.date_time() != null) {
             return ctx.date_time().accept(this);
-        } else if (ctx.inner_array() != null) {
-            return ctx.inner_array().accept(this);
+        } else if (ctx.array_() != null) {
+            return ctx.array_().accept(this);
         } else if (ctx.inline_table() != null) {
             return ctx.inline_table().accept(this);
         }

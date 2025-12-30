@@ -38,6 +38,14 @@ public class TOMLInlineTablesTest {
         String pug = toml.getString("animal/type/name").orElse(null);
         assertEquals("pug", pug);
 
+        Long mlDetailsYear = toml.getLong("multiline-table/details/year").orElse(0L);
+        assertEquals(1968L, mlDetailsYear);
+
+        String mlDetailsModel = toml.getString("multiline-table/details/model").orElse(null);
+        assertEquals("Mustang", mlDetailsModel);
+
+        Long inlineTableTrailingCommaValue = toml.getLong("inline_table_trailing_comma/value").orElse(0L);
+        assertEquals(1L, inlineTableTrailingCommaValue);
     }
 
 }

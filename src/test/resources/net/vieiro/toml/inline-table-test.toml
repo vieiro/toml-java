@@ -4,6 +4,19 @@ animal = { type.name = "pug" }
 nested = { brand = "Ford", details = { year = 1968, model ="Mustang"}}
 ahash = { version = "0.8", default-features = false, features = ["compile-time-rng"] }
 
-multiline-array = [ 1,
-    2, 3, 5 ]
+multiline-table = {
+  # Comment 1
+  brand = "Ford",
+  details = {
+    year = 1968,
+    # Comment 2
+    model ="Mustang",
+    tags = [
+      "t1",
+      "t2",
+      "t3"
+    ]
+  }
+}
 
+inline_table_trailing_comma = { name = "test", value = 1, }

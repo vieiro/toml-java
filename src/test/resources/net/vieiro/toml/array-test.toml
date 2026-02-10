@@ -3,3 +3,7 @@ colors = [ "red", "yellow", "green" ]
 nested_arrays_of_ints = [ [ 1, 2 ], [3, 4, 5] ]
 nested_mixed_array = [ [ 1, 2 ], ["a", "b", "c"] ]
 more_integers = [4, 5, 6,]
+
+multiline-array = [ 1,
+    # Second set of value separated by comment
+    2, 3, 5 ]

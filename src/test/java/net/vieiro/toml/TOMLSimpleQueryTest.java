@@ -30,17 +30,17 @@ public class TOMLSimpleQueryTest {
         TOML toml = Util.parse("array-of-tables-test.toml", verbose);
 
         // When we query something starting with a single "/"
-        String red = toml.getString("/fruit/apple/color").orElseThrow();
+        String red = toml.getString("/fruit/apple/color").orElseThrow(() -> new IllegalStateException("/fruit/apple/color"));
         // Then we get the proper value
         Assertions.assertEquals("red", red);
 
         // When we remove the leading "/"
-        red = toml.getString("fruit/apple/color").orElseThrow();
+        red = toml.getString("fruit/apple/color").orElseThrow(() -> new IllegalStateException("fruit/apple/color"));
         // Then the value is also correct
         Assertions.assertEquals("red", red);
 
         // When we add different contigous slashes
-        red = toml.getString("fruit///apple/color").orElseThrow();
+        red = toml.getString("fruit///apple/color").orElseThrow( () -> new IllegalStateException("fruit///apple/color"));
         // Then the value is also correct
         Assertions.assertEquals("red", red);
 

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.vieiro</groupId>
     <artifactId>toml-java</artifactId>
-    <version>13.4.3-SNAPSHOT</version>
+    <version>13.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>toml-java</name>
@@ -81,7 +81,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <version.antlr>4.13.1</version.antlr>
-        <maven.compiler.release>11</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -193,6 +192,7 @@
                 <version>3.14.1</version>
                 <configuration>
                     <compilerArgument>-Xlint:unchecked</compilerArgument>
+                    <release>8</release>
                 </configuration>
             </plugin>
             <plugin>

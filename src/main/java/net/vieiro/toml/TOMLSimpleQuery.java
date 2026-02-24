@@ -32,7 +32,7 @@ final class TOMLSimpleQuery {
         Object context = root;
         for (int i = 0; i < parts.length; i++) {
             String part = parts[i];
-            if (part.isBlank()) {
+            if (part.trim().isEmpty()) {
                 continue;
             }
             if (context instanceof Map) {
